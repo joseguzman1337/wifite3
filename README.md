@@ -3,7 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1b892897778e4faa85018c9f72e484be)](https://app.codacy.com/gh/4k4xs4pH1r3/wifite3/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ======
 
-Tested on last Kali + Ubuntu + Arch on [2nd May of 2023]
+Tested on last Kali + Ubuntu + Arch on [7 Nov of 2024]
 
 #
 This repo is a complete re-write of [`wifite`](https://github.com/derv82/wifite), a Python script for auditing wireless networks.
@@ -45,7 +45,7 @@ Set interface down + monitor mode + activate interface + TX power (as root)
 Replace in the below script the wlan name of the wifi device that you like to use
 
 ```bash
-sudo airmon-ng check kill && sudo service NetworkManager restart && sudo ip link set wlan0 down && sudo iw dev wlan0 set type monitor && sudo ip link set wlan0 up && sudo iw wlan0 set txpower fixed 3737373737373 && sudo service NetworkManager start
+sudo rfkill unblock all && sudo airmon-ng check kill && sudo service NetworkManager restart && sudo ip link set wlan0 down && sudo iw dev wlan0 set type monitor && sudo ip link set wlan0 up && sudo iw wlan0 set txpower fixed 3737373737373 && sudo service NetworkManager start
 ```
   
   You may also uncheck the box "Automatically connect to this network when it is avaiable" in nm-connection-editor. This only works if you have a saved wifi connection.
@@ -83,7 +83,7 @@ iwconfig
 ```
 
 ```bash
-airmon-ng check kill && ip link set wlan0 down && iw dev wlan0 set type monitor && ip link set wlan0 up && iw wlan0 set txpower fixed 3737373737373
+sudo rfkill unblock all && airmon-ng check kill && ip link set wlan0 down && iw dev wlan0 set type monitor && ip link set wlan0 up && iw wlan0 set txpower fixed 3737373737373
 ```
 
 
