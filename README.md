@@ -66,7 +66,7 @@ For Kali Linux + Ubuntu + Debian
 ----------
 
 ```bash
-sudo wifite -i wlan0 --ignore-locks --keep-ivs -p 37 -mac --random-mac -v -inf --bully --pmkid --dic /usr/share/wordlists/rockyou.txt --require-fakeauth --nodeauth --wps --pmkid-timeout 37
+sudo wifite -i wlan0 --ignore-locks --keep-ivs -p 737 -mac --random-mac -v -inf --bully --pmkid --dic /usr/share/wordlists/rockyou.txt --require-fakeauth --nodeauth --wps --pmkid-timeout 737
 ```
 
 
