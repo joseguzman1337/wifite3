@@ -32,10 +32,45 @@ class Arguments(object):
         self._add_wpa_args(parser.add_argument_group(Color.s('{C}WPA{W}')))
         self._add_wps_args(parser.add_argument_group(Color.s('{C}WPS{W}')))
         self._add_pmkid_args(parser.add_argument_group(Color.s('{C}PMKID{W}')))
+        self._add_hashcat_realtime_args(parser.add_argument_group(Color.s('{C}REALTIME HASHCAT{W}')))
         self._add_eviltwin_args(parser.add_argument_group(Color.s('{C}EVIL TWIN{W}')))
         self._add_command_args(parser.add_argument_group(Color.s('{C}COMMANDS{W}')))
 
         return parser.parse_args()
+
+    def _add_hashcat_realtime_args(self, hrt):
+        hrt.add_argument('--hashcat-realtime',
+            action='store_true',
+            dest='hashcat_realtime',
+            help=Color.s('Enable real-time Hashcat cracking for captured PMKIDs and WPA handshakes (default: {G}off{W})'))
+        hrt.add_argument('--hashcat-realtime-wordlist-dir',
+            action='store',
+            dest='hashcat_realtime_wordlist_dir',
+            metavar='<directory>',
+            default='/usr/share/wordlists/', # Sensible default
+            help=Color.s('Directory of wordlists for real-time Hashcat cracking (default: {G}/usr/share/wordlists/{W})'))
+        hrt.add_argument('--hashcat-realtime-wordlist-file',
+            action='store',
+            dest='hashcat_realtime_wordlist_file',
+            metavar='<file>',
+            default=None,
+            help=Color.s('Specific wordlist file for real-time Hashcat cracking (overrides directory search)'))
+        hrt.add_argument('--hashcat-realtime-options',
+            action='store',
+            dest='hashcat_realtime_options',
+            metavar='<options_str>',
+            default=None,
+            help=Color.s('Custom options string for Hashcat real-time sessions (e.g., "--increment --increment-min=4")'))
+        hrt.add_argument('--hashcat-realtime-force-cpu',
+            action='store_true',
+            dest='hashcat_realtime_force_cpu',
+            help=Color.s('Force Hashcat to use CPU for real-time cracking (adds --force and device type CPU) (default: {G}off{W})'))
+        hrt.add_argument('--hashcat-realtime-gpu-devices',
+            action='store',
+            dest='hashcat_realtime_gpu_devices',
+            metavar='<ids_str>',
+            default=None,
+            help=Color.s('GPU device IDs for Hashcat real-time (e.g., "1,3" for --opencl-device-types 2 --opencl-device-ids 1,3) (default: {G}Hashcat auto{W})'))
 
 
     def _add_global_args(self, glob):
