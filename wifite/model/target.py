@@ -25,8 +25,8 @@ class Target(object):
                     1 First time seen (2015-05-27 19:28:43)
                     2 Last time seen  (2015-05-27 19:28:46)
                     3 channel         (6)
-                    4 Speed           (54)
-                    5 Privacy         (WPA2)
+                    4 Speed           (54) # Max Speed reported by airodump-ng
+                    5 Privacy         (WPA2) # Encryption string
                     6 Cipher          (CCMP TKIP)
                     7 Authentication  (PSK)
                     8 Power           (-62)
@@ -40,13 +40,61 @@ class Target(object):
         self.bssid      =     fields[0].strip()
         self.channel    =     fields[3].strip()
 
-        self.encryption =     fields[5].strip()
-        if 'WPA' in self.encryption:
+        privacy_str = fields[5].strip()
+        self.is_wpa3 = 'WPA3' in privacy_str
+        self.is_owe = 'OWE' in privacy_str
+
+        # Determine base encryption type
+        if self.is_wpa3:
+            self.encryption = 'WPA3'
+        elif self.is_owe:
+            self.encryption = 'OWE'
+        elif 'WPA2' in privacy_str: # WPA2 might be present with WPA3, WPA3 takes precedence
+            self.encryption = 'WPA2'
+        elif 'WPA' in privacy_str: # Check for WPA (without 2 or 3)
             self.encryption = 'WPA'
-        elif 'WEP' in self.encryption:
+        elif 'WEP' in privacy_str:
             self.encryption = 'WEP'
-        if len(self.encryption) > 4:
-            self.encryption = self.encryption[0:4].strip()
+        else:
+            # Fallback for open or unknown networks, ensure it's not too long
+            self.encryption = privacy_str.split(' ')[0] # Take the first part
+            if len(self.encryption) > 4:
+                self.encryption = self.encryption[0:4].strip()
+
+
+        # Wi-Fi Standard inference based on speed
+        # Speed is at fields[4]
+        speed_str = fields[4].strip()
+        mb_val = 0
+        self.has_qos = 'e' in speed_str # Airodump appends 'e' for QoS (802.11e)
+        if speed_str:
+            # Remove 'e' and any other non-numeric parts for parsing
+            numeric_part = ''.join(filter(str.isdigit, speed_str.split('.')[0]))
+            if numeric_part:
+                mb_val = int(numeric_part)
+
+        self.wifi_standard = None
+        if mb_val >= 6000:  # Theoretical speeds for Wi-Fi 7 (802.11be)
+            self.wifi_standard = 'be'
+        elif mb_val >= 1200: # Wi-Fi 6 (802.11ax) common rates
+            self.wifi_standard = 'ax'
+        elif mb_val > 54 : # Speeds potentially indicating 802.11n or 802.11ac
+            if mb_val >= 300: # Higher speeds are more likely ac
+                self.wifi_standard = 'ac'
+            else: # Lower end of "high speeds" could be n
+                self.wifi_standard = 'n'
+        elif mb_val > 22: # 802.11g
+            self.wifi_standard = 'g'
+        elif mb_val > 0 : # 802.11b or b+
+            self.wifi_standard = 'b' # Simplified, could be b+ if speed > 11
+        
+        # Refine based on QoS if 'e' was present and standard is not already advanced
+        if self.has_qos and self.wifi_standard in ['g', 'b']:
+             # If it's g/b but has QoS, it's likely n (or at least g with e).
+             # For simplicity, let's ensure 'n' if QoS is present and not already ac/ax/be
+             if self.wifi_standard == 'g': # g with QoS often implies n capabilities
+                 self.wifi_standard = 'n'
+
 
         self.power      = int(fields[8].strip())
         if self.power < 0:
@@ -110,7 +158,15 @@ class Target(object):
 
         # Add a '*' if we decloaked the ESSID
         decloaked_char = '*' if self.decloaked else ' '
-        essid += Color.s('{P}%s' % decloaked_char)
+        # essid += Color.s('{P}%s' % decloaked_char) # Decloak marker can be integrated or removed if too cluttered
+
+        # Display Wi-Fi standard if known
+        std_str = ''
+        if self.wifi_standard:
+            std_str = Color.s('{C}[%s]' % self.wifi_standard.upper())
+        
+        essid_display = '%s%s %s' % (essid, Color.s('{P}%s' % decloaked_char), std_str)
+
 
         if show_bssid:
             bssid = Color.s('{O}%s  ' % self.bssid)
@@ -125,8 +181,15 @@ class Target(object):
         encryption = self.encryption.rjust(4)
         if 'WEP' in encryption:
             encryption = Color.s('{G}%s' % encryption)
-        elif 'WPA' in encryption:
+        elif 'WPA3' in encryption:
+            encryption = Color.s('{R}%s' % encryption) # Red for WPA3
+        elif 'OWE' in encryption:
+            encryption = Color.s('{M}%s' % encryption) # Magenta for OWE
+        elif 'WPA2' in encryption: # Keep WPA2 as Orange
             encryption = Color.s('{O}%s' % encryption)
+        elif 'WPA' in encryption: # Original WPA also Orange
+            encryption = Color.s('{O}%s' % encryption)
+
 
         power = '%sdb' % str(self.power).rjust(3)
         if self.power > 50:
@@ -151,7 +214,13 @@ class Target(object):
             clients = Color.s('{G}  ' + str(len(self.clients)))
 
         result = '%s  %s%s  %s  %s  %s  %s' % (
-                essid, bssid, channel, encryption, power, wps, clients)
+                essid_display.ljust(max_essid_len + 8), # Adjusted ljust for new std_str
+                bssid,
+                channel,
+                encryption,
+                power,
+                wps,
+                clients)
         result += Color.s('{W}')
         return result
 
