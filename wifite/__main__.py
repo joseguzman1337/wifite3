@@ -23,6 +23,11 @@ class Wifite(object):
 
         Configuration.initialize(load_interface=False)
 
+        self.realtime_crack_manager = None
+        if Configuration.hashcat_realtime:
+            from .realtime_crack_manager import RealtimeCrackManager
+            self.realtime_crack_manager = RealtimeCrackManager(Configuration)
+
         if os.getuid() != 0:
             Color.pl('{!} {R}error: {O}wifite{R} must be run as {O}root{W}')
             Color.pl('{!} {R}re-run with {O}sudo{W}')
@@ -79,7 +84,8 @@ class Wifite(object):
         targets = s.select_targets()
 
         # Attack
-        attacked_targets = AttackAll.attack_multiple(targets)
+        # Pass realtime_crack_manager to attack_multiple if it exists
+        attacked_targets = AttackAll.attack_multiple(targets, self.realtime_crack_manager)
 
         Color.pl('{+} Finished attacking {C}%d{W} target(s), exiting' % attacked_targets)
 
@@ -97,6 +103,17 @@ def entry_point():
 
     except KeyboardInterrupt:
         Color.pl('\n{!} {O}Interrupted, Shutting down...{W}')
+        # Ensure wifite object exists for cleanup if initialization was partial
+        if 'wifite' in locals() and hasattr(wifite, 'realtime_crack_manager') and wifite.realtime_crack_manager:
+            Color.pl('{!} {O}Stopping any active real-time cracking sessions...{W}')
+            wifite.realtime_crack_manager.stop_current_crack_attempt(cleanup_hash_file=True)
+
+
+    # Final cleanup call, also handles non-interrupt exits
+    if 'wifite' in locals() and hasattr(wifite, 'realtime_crack_manager') and wifite.realtime_crack_manager:
+        if wifite.realtime_crack_manager.is_actively_cracking(): # Check if it's still active before printing stop message again
+             Color.pl('{!} {O}Ensuring real-time cracking sessions are stopped before exit...{W}')
+             wifite.realtime_crack_manager.stop_current_crack_attempt(cleanup_hash_file=True)
 
     Configuration.exit_gracefully(0)
 

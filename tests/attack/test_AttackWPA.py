@@ -72,6 +72,56 @@ class TestAttackWPA(unittest.TestCase):
                 break
         self.assertFalse(wpa3_warning_printed, "WPA3 warning should not be printed for a WPA2 target.")
 
+    @patch('wifite.attack.wpa.Handshake') # Mock the Handshake object operations
+    @patch('wifite.tools.hashcat.HcxPcapTool.generate_hccapx_file') # Mock .hccapx generation
+    @patch('wifite.tools.aircrack.Aircrack.crack_handshake') # Mock aircrack-ng cracking
+    @patch('os.path.exists', return_value=True) # Assume files exist
+    def test_run_starts_realtime_crack_on_wpa2_target_if_enabled(self, mock_path_exists, mock_aircrack_crack, mock_gen_hccapx, MockHandshake):
+        Configuration.hashcat_realtime = True
+        Configuration.wordlist = None # Don't proceed to local aircrack cracking for this specific test focus
+
+        # Mock target
+        mock_target_wpa2_fields = ['W2:RT:CA:DD:RE:SS', '2023-01-01 10:00:00', '2023-01-01 10:00:00', '6', '300', 'WPA2', 'CCMP', 'PSK', '-50', '10', '0', '0.0.0.0', '10', 'WPA2RealTm', '']
+        target_wpa2 = Target(mock_target_wpa2_fields)
+        self.assertFalse(target_wpa2.is_wpa3)
+
+        # Mock RealtimeCrackManager
+        mock_rt_manager = MagicMock()
+        mock_rt_manager.is_actively_cracking.return_value = False
+        mock_rt_manager.get_cracked_password.return_value = None
+        
+        attack = AttackWPA(target_wpa2, realtime_crack_manager=mock_rt_manager)
+
+        # Mock capture_handshake to return a mock Handshake object
+        mock_handshake_obj = MockHandshake.return_value
+        mock_handshake_obj.capfile = '/tmp/fake_handshake.cap' # Used by generate_hccapx_file
+        mock_handshake_obj.bssid = target_wpa2.bssid
+        mock_handshake_obj.essid = target_wpa2.essid
+        mock_handshake_obj.has_handshake.return_value = True # Simulate successful capture
+        
+        with patch.object(attack, 'capture_handshake', return_value=mock_handshake_obj) as mock_capture:
+            # Mock generate_hccapx_file to return a predictable path
+            expected_hccapx_path = '/tmp/generated_for_realtime.hccapx'
+            mock_gen_hccapx.return_value = expected_hccapx_path
+            
+            # Mock save_handshake as it's called after capture
+            with patch.object(attack, 'save_handshake') as mock_save_hs:
+                attack.run()
+        
+        mock_capture.assert_called_once()
+        mock_gen_hccapx.assert_called_once_with(mock_handshake_obj)
+        
+        # Assert that start_target_crack_session was called on the manager
+        mock_rt_manager.start_target_crack_session.assert_called_once_with(
+            target_bssid=target_wpa2.bssid,
+            essid=target_wpa2.essid,
+            hash_file_path=expected_hccapx_path,
+            hash_type=2500 # WPA/WPA2 HCCAPX
+        )
+        # The run method will return False because Configuration.wordlist is None,
+        # preventing aircrack-ng from running and thus not finding a key.
+        self.assertFalse(attack.success)
+
 
 if __name__ == '__main__':
     unittest.main()

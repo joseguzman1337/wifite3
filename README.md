@@ -196,6 +196,35 @@ Cracking a pre-captured handshake using John The Ripper (via the `--crack` optio
 #
 #
 
+## Real-Time Hashcat Cracking
+
+Wifite can now attempt to crack captured PMKIDs and WPA/WPA2 handshakes in real-time using Hashcat running in the background. This is useful for getting quick results on potentially weak passwords while other Wifite operations (like scanning or attacking other targets) continue.
+
+**Enabling the Feature:**
+*   To enable this feature, use the `--hashcat-realtime` command-line argument.
+
+**Wordlist Configuration:**
+*   `--hashcat-realtime-wordlist-dir <directory>`: By default, Wifite will iterate through wordlists found in `/usr/share/wordlists/`. You can specify a different directory using this option.
+*   `--hashcat-realtime-wordlist-file <file>`: To use a single, specific wordlist for real-time attempts (which overrides the directory search), use this option. This is recommended for faster, targeted attacks against potentially common passwords.
+
+**Custom Hashcat Options:**
+*   `--hashcat-realtime-options "<options_string>"`: Pass custom command-line options directly to Hashcat. For example, to use a specific rule file: `--hashcat-realtime-options "-r /path/to/rules/best64.rule"`. Ensure the options are quoted if they contain spaces.
+
+**CPU/GPU Control:**
+*   `--hashcat-realtime-force-cpu`: Force Hashcat to use only CPU resources (adds `--force -D 1` or similar to Hashcat). This can be useful if GPU resources are needed for other tasks or if GPU cracking is unstable.
+*   `--hashcat-realtime-gpu-devices <device_ids>`: Specify which GPU devices Hashcat should use (e.g., `1,3` for `--opencl-device-types 2 --opencl-device-ids 1,3`). Consult Hashcat documentation for device selection.
+
+**How It Works:**
+*   When a PMKID is captured (via `hcxdumptool`) or a WPA handshake is obtained and converted to `.hccapx` format (via `hcxpcapngtool`), Wifite will initiate a Hashcat session if real-time cracking is enabled.
+*   Real-time cracking operates on one target's hash at a time. If a new hash (e.g., from a different target) is captured, Wifite may switch the real-time cracking session to the new target or queue it.
+*   If a password is cracked, other attacks against that specific target are typically stopped, and the password is saved to `cracked.txt` and `cracked.json`.
+*   Status messages from Hashcat (speed, progress) will be displayed periodically in the Wifite console.
+
+**Important Considerations:**
+*   **Resource Intensive:** This feature can significantly increase CPU and/or GPU usage. Monitor system performance, especially on resource-constrained devices.
+*   **Hashcat & Dependencies:** A working installation of Hashcat (and its drivers for GPU cracking, e.g., OpenCL runtimes) and `hcxtools` (for `.hccapx` conversion) is required.
+*   **Experimental:** While functional, consider this an advanced feature. Behavior, performance, and output parsing may vary based on your system, drivers, Hashcat version, and the specific options used.
+
 Supported Operating Systems
 ---------------------------
 Wifite is designed specifically for the latest version of [**Kali** Linux](https://www.kali.org/). [ParrotSec](https://www.parrotsec.org/). [Ubuntu](http://releases.ubuntu.com/disco/) is also supported.
@@ -240,6 +269,7 @@ Brief Feature List
 ------------------
 * Identifies WPA3 and OWE networks.
 * Shows inferred Wi-Fi 6/7 (ax/be) capabilities.
+* Real-time background cracking of captured PMKIDs and WPA handshakes using Hashcat.
 * [PMKID hash capture](https://hashcat.net/forum/thread-7717.html) (enabled by-default, force with: `--pmkid`)
 * WPS Offline Brute-Force Attack aka "Pixie-Dust". (enabled by-default, force with: `--wps-only --pixie`)
 * WPS Online Brute-Force Attack aka "PIN attack". (enabled by-default, force with: `--wps-only --no-pixie`)
