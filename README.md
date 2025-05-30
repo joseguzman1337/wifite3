@@ -27,6 +27,7 @@ https://github.com/4k4xs4pH1r3/realtek
 
 Install & Activate `wifite` Ninja mode as root
 ----------
+*Note: The following script attempts to install many dependencies. For best results with WPA3 and Wi-Fi 6/7, ensure you are using recent versions of the Aircrack-ng suite, HCXTools, and Hashcat. Building these from source may be required if your distribution's packages are outdated.*
 ```bash
 apt update -y && apt install dirmngr sqlcipher aptitude -y && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 7638D0442B90D010 04EE7237B7D453EC EF0F382A1A7B6500 && apt-get update -y && apt-get upgrade -y && aptitude install hcxtools libsqlite3-dev zlib1g-dev libncurses5-dev libgdbm-dev libbz2-dev libssl-dev libdb-dev libssl-dev build-essential libssl-dev libblas-dev libatlas-base-dev libpq-dev libffi-dev zlib1g-dev libxml2-dev libxslt1-dev zlib1g-dev libpcap-dev libpcap-dev -y && pip install psycopg2-binary pysqlcipher3 psycopg2 testresources && pip install --upgrade wheel pip install scapy && aptitude install && pip list --outdated && pip install --upgrade wheel && pip install --upgrade setuptools && sudo apt-get update -y && sudo apt-get install python2-dev libssl-dev libpcap-dev python3-scapy -y && cd /usr/share/ && git clone https://github.com/JPaulMora/Pyrit.git --depth=1 && sed -i "s/COMPILE_AESNI/COMPILE_AESNIX/" Pyrit/cpyrit/_cpyrit_cpu.c && cd Pyrit && python2 setup.py clean && python2 setup.py build && sudo python2 setup.py install && cd .. && pip install psycopg2-binary && pip install psycopg2 && pip install virtualenvwrapper && aptitude install neofetch git make clang libpcap-dev reaver tshark wireshark aircrack-ng pixiewps libssl-dev libcurl4-openssl-dev libpcap0.8-dev libcurl4-doc libidn11-dev libkrb5-dev libldap2-dev librtmp-dev libssh2-1-dev libssl-doc -y && cd /usr/share/ && git clone https://github.com/ZerBea/hcxtools.git && cd hcxtools && make && make install && cd /usr/share && git clone https://github.com/ZerBea/hcxdumptool.git  && cd hcxdumptool && make && make install && cd /usr/share && git clone https://github.com/joswr1ght/cowpatty.git && cd cowpatty && make && make install && cd /usr/share && git clone https://github.com/aanarchyy/bully.git && cd bully/src && make && make install && neofetch && cd /usr/share && neofetch && cd && pip --version && python --version && sudo ln -s $(which hcxpcapngtool) /usr/local/bin/hcxpcaptool
 ```
@@ -199,7 +200,7 @@ Supported Operating Systems
 ---------------------------
 Wifite is designed specifically for the latest version of [**Kali** Linux](https://www.kali.org/). [ParrotSec](https://www.parrotsec.org/). [Ubuntu](http://releases.ubuntu.com/disco/) is also supported.
 
-Other pen-testing distributions (such as BackBox or Ubuntu) have outdated versions of the tools used by Wifite. Do not expect support unless you are using the latest versions of the *Required Tools*, and also [patched wireless drivers that support injection]().
+Other pen-testing distributions (such as BackBox or Ubuntu) may have outdated versions of the tools used by Wifite. Do not expect full support unless you are using the latest versions of the *Required Tools*, and also [patched wireless drivers that support injection](). For best results, especially with newer standards like WPA3, OWE, Wi-Fi 6/7, ensure your core tools (`airodump-ng`, `hcxdumptool`, `hashcat`, etc.) are up-to-date, potentially by building from source.
 
 Components that use Wifite
 --------------
@@ -237,6 +238,8 @@ Second, only the latest versions of these programs are supported and Wifite need
 
 Brief Feature List
 ------------------
+* Identifies WPA3 and OWE networks.
+* Shows inferred Wi-Fi 6/7 (ax/be) capabilities.
 * [PMKID hash capture](https://hashcat.net/forum/thread-7717.html) (enabled by-default, force with: `--pmkid`)
 * WPS Offline Brute-Force Attack aka "Pixie-Dust". (enabled by-default, force with: `--wps-only --pixie`)
 * WPS Online Brute-Force Attack aka "PIN attack". (enabled by-default, force with: `--wps-only --no-pixie`)
@@ -270,6 +273,12 @@ Comparing this repo to the "old wifite" @ https://github.com/derv82/wifite
 * More-actively developed.
 * Python 3 support.
 * Sweet new ASCII banner.
+
+### WPA3, OWE, and Wi-Fi 6/7 Support
+* Wifite can now identify WPA3-SAE and OWE (Enhanced Open) networks.
+* Displays inferred Wi-Fi standards (802.11ax/Wi-Fi 6, 802.11be/Wi-Fi 7) based on network capabilities shown by `airodump-ng`.
+* For WPA3-SAE targets, Wifite prioritizes PMKID attacks. Traditional 4-way handshake capture (ineffective against WPA3-SAE) is skipped, and the user is informed.
+* Ensuring up-to-date versions of core tools (Aircrack-ng suite, HCXTools, Hashcat) is recommended for optimal Wi-Fi 6/7 and WPA3 support.
 
 What's gone?
 ------------
