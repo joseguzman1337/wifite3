@@ -18,8 +18,9 @@ import re
 from shutil import copy
 
 class AttackWPA(Attack):
-    def __init__(self, target):
+    def __init__(self, target, realtime_crack_manager=None):
         super(AttackWPA, self).__init__(target)
+        self.realtime_crack_manager = realtime_crack_manager
         self.clients = []
         self.crack_result = None
         self.success = False
@@ -56,7 +57,34 @@ class AttackWPA(Attack):
         Color.pl('\n{+} analysis of captured handshake file:')
         handshake.analyze()
 
-        # Check wordlist
+        # If real-time cracking is enabled, try to start a session with the captured handshake.
+        if handshake and self.realtime_crack_manager and Configuration.hashcat_realtime:
+            # Convert .cap to .hccapx for Hashcat using HcxPcapTool
+            from ..tools.hashcat import HcxPcapTool # Import locally to avoid circular if not already loaded
+            try:
+                # handshake.capfile should point to the cleaned/saved handshake from self.save_handshake()
+                hccapx_file = HcxPcapTool.generate_hccapx_file(handshake)
+                if hccapx_file and os.path.exists(hccapx_file):
+                    if not self.realtime_crack_manager.is_actively_cracking(self.target.bssid) and \
+                       not self.realtime_crack_manager.get_cracked_password(self.target.bssid):
+                        Color.pl('{+} {G}Handshake captured. Starting real-time Hashcat cracking session with .hccapx.{W}')
+                        self.realtime_crack_manager.start_target_crack_session(
+                            target_bssid=self.target.bssid,
+                            essid=self.target.essid if self.target.essid_known else "ESSID_Unknown",
+                            hash_file_path=hccapx_file, # Path to the .hccapx file
+                            hash_type=2500 # Hashcat mode for WPA/WPA2 hccapx
+                        )
+                    elif self.realtime_crack_manager.get_cracked_password(self.target.bssid):
+                        Color.pl('{+} {G}Handshake captured, but target already cracked by real-time manager.{W}')
+                    elif self.realtime_crack_manager.is_actively_cracking(self.target.bssid):
+                        Color.pl('{+} {G}Handshake captured, real-time cracking already in progress for this target.{W}')
+                else:
+                    Color.pl('{!} {R}Failed to convert handshake to .hccapx format for real-time cracking.{W}')
+            except Exception as e:
+                Color.pl('{!} {R}Error during .hccapx conversion for real-time cracking: %s{W}' % str(e))
+
+
+        # Check wordlist for the traditional aircrack-ng attack
         if Configuration.wordlist is None:
             Color.pl('{!} {O}Not cracking handshake because' +
                      ' wordlist ({R}--dict{O}) is not set')
