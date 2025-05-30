@@ -28,7 +28,7 @@ class AttackWPA(Attack):
         '''Initiates full WPA handshake capture attack.'''
 
         # Skip if target is not WPS
-        if Configuration.wps_only and self.target.wps == False:
+        if Configuration.wps_only and self.target.wps == False: # Assuming self.target.wps is a boolean or similar
             Color.pl('\r{!} {O}Skipping WPA-Handshake attack on {R}%s{O} because {R}--wps-only{O} is set{W}' % self.target.essid)
             self.success = False
             return self.success
@@ -37,6 +37,12 @@ class AttackWPA(Attack):
         if Configuration.use_pmkid_only:
             self.success = False
             return False
+
+        # Check for WPA3-SAE
+        if hasattr(self.target, 'is_wpa3') and self.target.is_wpa3:
+            Color.pl('\r{!} {O}Target {C}%s{O} is WPA3-SAE. Traditional 4-way handshake capture is ineffective. Prioritizing PMKID attack.{W}' % self.target.essid)
+            self.success = False # Indicate attack module is not suitable or did not run as a "success" for handshake cracking
+            return False # Exit gracefully
 
         # Capture the handshake (or use an old one)
         handshake = self.capture_handshake()
