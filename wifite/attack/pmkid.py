@@ -16,8 +16,9 @@ import re
 
 class AttackPMKID(Attack):
 
-    def __init__(self, target):
+    def __init__(self, target, realtime_crack_manager=None):
         super(AttackPMKID, self).__init__(target)
+        self.realtime_crack_manager = realtime_crack_manager
         self.crack_result = None
         self.success = False
         self.pcapng_file = Configuration.temp('pmkid.pcapng')
@@ -90,15 +91,40 @@ class AttackPMKID(Attack):
         if pmkid_file is None:
             return False  # No hash found.
 
-        # Crack it.
+        # If real-time cracking is enabled, start a session.
+        if self.realtime_crack_manager and Configuration.hashcat_realtime:
+            if not self.realtime_crack_manager.is_actively_cracking(self.target.bssid) and \
+               not self.realtime_crack_manager.get_cracked_password(self.target.bssid):
+                Color.pl('{+} {G}PMKID captured. Starting real-time Hashcat cracking session.{W}')
+                self.realtime_crack_manager.start_target_crack_session(
+                    target_bssid=self.target.bssid,
+                    essid=self.target.essid if self.target.essid_known else "ESSID_Unknown",
+                    hash_file_path=pmkid_file,
+                    hash_type=16800
+                )
+                # The attack will continue with its own cracking logic below,
+                # real-time cracking runs in parallel.
+            elif self.realtime_crack_manager.get_cracked_password(self.target.bssid):
+                 Color.pl('{+} {G}PMKID available, but target already cracked by real-time manager.{W}')
+            elif self.realtime_crack_manager.is_actively_cracking(self.target.bssid):
+                 Color.pl('{+} {G}PMKID available, real-time cracking already in progress for this target.{W}')
+
+
+        # Crack it (original blocking crack).
         try:
             self.success = self.crack_pmkid_file(pmkid_file)
         except KeyboardInterrupt:
             Color.pl('\n{!} {R}Failed to crack PMKID: {O}Cracking interrupted by user{W}')
             self.success = False
-            return False
+            # Do not return False here if a real-time session was started,
+            # let AttackAll handle interrupt behavior.
+            # If no real-time session, then it's a fail for this attack module.
+            if not (self.realtime_crack_manager and self.realtime_crack_manager.is_actively_cracking(self.target.bssid)):
+                return False
 
-        return True  # Even if we don't crack it, capturing a PMKID is 'successful'
+        # If PMKID was captured, this attack module considers its main task done.
+        # Whether it was cracked here or by real-time manager is handled by AttackAll.
+        return True
 
 
     def capture_pmkid(self):
