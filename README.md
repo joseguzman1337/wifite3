@@ -3,10 +3,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1b892897778e4faa85018c9f72e484be)](https://app.codacy.com/gh/4k4xs4pH1r3/wifite3/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ======
 
-Tested on last Kali + Ubuntu + Arch on [7 Nov of 2024]
+Tested on the last Kali + Ubuntu + Arch on [22 July 2025]
 
 #
-This repo is a complete re-write of [`wifite`](https://github.com/derv82/wifite), a Python script for auditing wireless networks.
+This repo is a complete rewrite of [`wifite`](https://github.com/derv82/wifite), a Python script for auditing wireless networks.
 
 Wifite runs existing wireless-auditing tools for you. Stop memorizing command arguments & switches!
 
@@ -21,7 +21,7 @@ Install Realtek / Alfa Cards:
 ----------
 RTL8812AU/21AU and RTL8814AU drivers with monitor mode and frame injection
 
-https://github.com/4k4xs4pH1r3/realtek
+https://github.com/joseguzman1337/realtek
 
 
 
@@ -43,36 +43,20 @@ iwconfig
 
 Set interface down + monitor mode + activate interface + TX power (as root)
 ----------
-Replace in the below script the wlan name of the wifi device that you like to use
+Replace in the below script the WLAN name of the wifi device that you would like to use
 
 ```bash
-sudo rfkill unblock all
+sudo rfkill unblock wifi && sudo ip link set wlan0 down 2>/dev/null; sudo iw dev wlan0 set type monitor 2>/dev/null; sudo ip link set wlan0 up; sudo iw dev wlan0 set txpower fixed 30mBm
 ```
 
-```bash
-sudo airmon-ng check kill && sudo service NetworkManager restart && sudo ip link set wlan0 down && sudo iw dev wlan0 set type monitor && sudo ip link set wlan0 up && sudo iw wlan0 set txpower fixed 3737373737373 && sudo service NetworkManager start
-```
-
-or
-
-```bash
-sudo ip link set wlan0 down && sudo iw dev wlan0 set type monitor && sudo ip link set wlan0 up && sudo iw wlan0 set txpower fixed 3737373737373 && sudo service NetworkManager start
-```
-
-or
-
-```bash
-sudo ip link set wlan0 down && sudo iw dev wlan0 set type monitor && sudo ip link set wlan0 up && sudo service NetworkManager start
-```
-
-You may also uncheck the box "Automatically connect to this network when it is avaiable" in nm-connection-editor. This only works if you have a saved wifi connection.
+You may also uncheck the box "Automatically connect to this network when it is available" in nm-connection-editor. This only works if you have a saved wifi connection.
 
 
 
 To start Wifite in Ninja Mode
 ----------
 
-Excute the below command and it will automatically start to capture and decrypt the password.
+Execute the command below, and it will automatically start capturing and decrypting the password.
 
 ----------
 For Kali Linux + Ubuntu + Debian
