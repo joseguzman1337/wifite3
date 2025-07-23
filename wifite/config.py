@@ -11,6 +11,9 @@ from .tools.macchanger import Macchanger
 class Configuration(object):
     ''' Stores configuration variables and functions for Wifite. '''
     version = '2.1.5'
+    
+# VERSION constant for backward compatibility
+VERSION = Configuration.version
 
     initialized = False # Flag indicating config has been initialized
     temp_dir = None     # Temporary directory
