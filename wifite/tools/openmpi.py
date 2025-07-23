@@ -67,6 +67,19 @@ class OpenMPI(Dependency):
             elapsed_time = time.time() - start_time
             Color.pl('{+} {G}Parallel scan completed in {C}%.1f{G} seconds{W}' % elapsed_time)
             
+            # Show any MPI output for debugging
+            if result.stdout.strip():
+                Color.pl('{+} {C}MPI Output:{W}')
+                for line in result.stdout.strip().split('\n'):
+                    if line.strip():
+                        Color.pl('    {D}%s{W}' % line)
+            
+            if result.stderr.strip():
+                Color.pl('{!} {O}MPI Warnings:{W}')
+                for line in result.stderr.strip().split('\n'):
+                    if line.strip() and 'WARNING' not in line.upper():
+                        Color.pl('    {O}%s{W}' % line)
+            
             # Aggregate results from all processes
             return OpenMPI._aggregate_scan_results(temp_dir)
             
@@ -153,33 +166,68 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 
     @staticmethod
     def _aggregate_scan_results(temp_dir):
-        '''Aggregate scan results from all MPI processes'''
+        '''Aggregate scan results from all MPI processes with comprehensive analysis'''
         from ..util.color import Color
         import os
         import glob
         import csv
+        import re
         
         all_targets = {}
-        csv_files = glob.glob(os.path.join(temp_dir, '*.csv'))
+        all_clients = {}
+        network_stats = {
+            'total_networks': 0,
+            'open_networks': 0,
+            'wep_networks': 0,
+            'wpa_networks': 0,
+            'wpa2_networks': 0,
+            'wpa3_networks': 0,
+            'enterprise_networks': 0,
+            'hidden_networks': 0,
+            'total_clients': 0,
+            'unique_vendors': set(),
+            'channel_usage': {},
+            'network_types': {}
+        }
         
-        Color.pl('{+} {C}Aggregating results from {G}%d{C} scan files...{W}' % len(csv_files))
+        # Look for airodump CSV files (they end with -01.csv)
+        csv_files = glob.glob(os.path.join(temp_dir, '*-01.csv'))
+        
+        Color.pl('{+} {C}🥷 NINJA ANALYSIS:{W} Processing {G}%d{C} scan files...{W}' % len(csv_files))
         
         for csv_file in csv_files:
             try:
-                with open(csv_file, 'r') as f:
-                    reader = csv.reader(f)
-                    for row in reader:
-                        if len(row) > 13 and row[0] != 'BSSID':  # Skip header
-                            bssid = row[0].strip()
-                            if bssid:
-                                # Store unique networks by BSSID
-                                all_targets[bssid] = row
-            except Exception:
+                with open(csv_file, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    
+                    # Split content into AP and Station sections
+                    if 'Station MAC' in content:
+                        parts = content.split('Station MAC')
+                        ap_section = parts[0]
+                        station_section = 'Station MAC' + parts[1] if len(parts) > 1 else ''
+                    else:
+                        ap_section = content
+                        station_section = ''
+                    
+                    # Parse Access Points
+                    OpenMPI._parse_access_points(ap_section, all_targets, network_stats)
+                    
+                    # Parse Client Stations
+                    if station_section:
+                        OpenMPI._parse_client_stations(station_section, all_clients, network_stats)
+                        
+            except Exception as e:
+                Color.pl('{!} {O}Warning: Failed to parse %s: %s{W}' % (csv_file, str(e)))
                 continue
         
-        Color.pl('{+} {G}Found {C}%d{G} unique networks from parallel scan{W}' % len(all_targets))
+        # Display comprehensive analysis
+        OpenMPI._display_network_intelligence(network_stats, all_targets, all_clients)
         
-        return list(all_targets.values())
+        return {
+            'targets': list(all_targets.values()),
+            'clients': list(all_clients.values()),
+            'stats': network_stats
+        }
 
     @staticmethod
     def ninja_comprehensive_scan(interface, scan_time=137):
@@ -198,3 +246,299 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
         
         # Run parallel scan
         return OpenMPI.run_parallel_scan(interface, all_channels, scan_time)
+
+    @staticmethod
+    def _parse_access_points(ap_section, all_targets, network_stats):
+        '''Parse access points from airodump CSV output'''
+        import re
+        
+        lines = ap_section.strip().split('\n')
+        for line in lines[1:]:  # Skip header
+            if line.strip() and 'BSSID' not in line:
+                parts = [p.strip() for p in line.split(', ')]
+                if len(parts) >= 14 and parts[0] and ':' in parts[0]:
+                    bssid = parts[0].upper()
+                    if bssid and bssid != 'BSSID':
+                        # Extract network information
+                        privacy = parts[5] if len(parts) > 5 else ''
+                        cipher = parts[6] if len(parts) > 6 else ''
+                        auth = parts[7] if len(parts) > 7 else ''
+                        power = parts[8] if len(parts) > 8 else ''
+                        beacons = parts[9] if len(parts) > 9 else ''
+                        iv = parts[10] if len(parts) > 10 else ''
+                        lan_ip = parts[11] if len(parts) > 11 else ''
+                        id_length = parts[12] if len(parts) > 12 else ''
+                        essid = parts[13] if len(parts) > 13 else ''
+                        key = parts[14] if len(parts) > 14 else ''
+                        
+                        # Detect network type and security
+                        network_type = OpenMPI._detect_network_type(privacy, cipher, auth, essid)
+                        vendor = OpenMPI._detect_vendor_from_mac(bssid)
+                        
+                        # Store enhanced network info
+                        enhanced_parts = parts + [network_type, vendor]
+                        all_targets[bssid] = enhanced_parts
+                        
+                        # Update statistics
+                        network_stats['total_networks'] += 1
+                        OpenMPI._update_security_stats(network_stats, privacy, cipher, auth)
+                        
+                        if not essid or essid == '':
+                            network_stats['hidden_networks'] += 1
+                        
+                        # Track channel usage
+                        try:
+                            channel = int(parts[3]) if len(parts) > 3 and parts[3].isdigit() else 0
+                            if channel > 0:
+                                network_stats['channel_usage'][channel] = network_stats['channel_usage'].get(channel, 0) + 1
+                        except:
+                            pass
+                        
+                        # Track network types
+                        network_stats['network_types'][network_type] = network_stats['network_types'].get(network_type, 0) + 1
+                        network_stats['unique_vendors'].add(vendor)
+
+    @staticmethod
+    def _parse_client_stations(station_section, all_clients, network_stats):
+        '''Parse client stations from airodump CSV output'''
+        lines = station_section.strip().split('\n')
+        for line in lines[1:]:  # Skip header
+            if line.strip() and 'Station MAC' not in line:
+                parts = [p.strip() for p in line.split(', ')]
+                if len(parts) >= 6 and parts[0] and ':' in parts[0]:
+                    station_mac = parts[0].upper()
+                    first_time = parts[1] if len(parts) > 1 else ''
+                    last_time = parts[2] if len(parts) > 2 else ''
+                    power = parts[3] if len(parts) > 3 else ''
+                    packets = parts[4] if len(parts) > 4 else ''
+                    bssid = parts[5] if len(parts) > 5 else ''
+                    probed_essids = parts[6] if len(parts) > 6 else ''
+                    
+                    # Analyze client information
+                    vendor = OpenMPI._detect_vendor_from_mac(station_mac)
+                    device_type = OpenMPI._detect_device_type(station_mac, probed_essids)
+                    
+                    client_info = {
+                        'mac': station_mac,
+                        'first_seen': first_time,
+                        'last_seen': last_time,
+                        'power': power,
+                        'packets': packets,
+                        'associated_bssid': bssid,
+                        'probed_essids': probed_essids,
+                        'vendor': vendor,
+                        'device_type': device_type
+                    }
+                    
+                    all_clients[station_mac] = client_info
+                    network_stats['total_clients'] += 1
+                    network_stats['unique_vendors'].add(vendor)
+
+    @staticmethod
+    def _detect_network_type(privacy, cipher, auth, essid):
+        '''Detect network type based on security parameters'''
+        privacy = privacy.lower() if privacy else ''
+        cipher = cipher.lower() if cipher else ''
+        auth = auth.lower() if auth else ''
+        essid = essid.lower() if essid else ''
+        
+        # Enterprise networks
+        if 'eap' in auth or 'enterprise' in auth or '802.1x' in auth:
+            return 'Enterprise'
+        
+        # WPA3 detection
+        if 'sae' in auth or 'wpa3' in privacy or 'owe' in auth:
+            return 'WPA3'
+        
+        # WPA2 detection
+        if 'wpa2' in privacy or 'ccmp' in cipher or 'psk' in auth:
+            return 'WPA2'
+        
+        # WPA detection
+        if 'wpa' in privacy and 'wpa2' not in privacy:
+            return 'WPA'
+        
+        # WEP detection
+        if 'wep' in privacy or 'wep' in cipher:
+            return 'WEP'
+        
+        # Open networks
+        if not privacy or privacy == '' or 'none' in privacy:
+            return 'Open'
+        
+        # Guest networks
+        if any(keyword in essid for keyword in ['guest', 'public', 'free', 'open']):
+            return 'Guest'
+        
+        # IoT/Smart devices
+        if any(keyword in essid for keyword in ['iot', 'smart', 'cam', 'ring', 'nest', 'alexa']):
+            return 'IoT'
+        
+        return 'Unknown'
+
+    @staticmethod
+    def _detect_vendor_from_mac(mac_address):
+        '''Detect device vendor from MAC address OUI'''
+        if not mac_address or len(mac_address) < 8:
+            return 'Unknown'
+        
+        oui = mac_address[:8].upper().replace(':', '')
+        
+        # Common vendor OUI prefixes
+        vendor_ouis = {
+            '00:1B:63': 'Apple',
+            '00:23:6C': 'Apple', 
+            '00:26:08': 'Apple',
+            '3C:07:54': 'Apple',
+            '00:50:F2': 'Microsoft',
+            '00:15:5D': 'Microsoft',
+            '00:1D:D8': 'Microsoft',
+            '00:16:EA': 'Samsung',
+            '00:12:FB': 'Samsung',
+            '34:23:87': 'Samsung',
+            '00:0F:DE': 'Intel',
+            '00:15:00': 'Intel',
+            '00:21:6A': 'Intel',
+            '00:04:20': 'Cisco',
+            '00:1B:D4': 'Cisco',
+            '00:26:CA': 'Cisco',
+            '00:23:04': 'Huawei',
+            '00:E0:FC': 'Huawei',
+            '34:6B:D3': 'Huawei',
+            '00:1E:10': 'Google',
+            '00:1A:11': 'Google'
+        }
+        
+        # Check exact OUI match first
+        for vendor_oui, vendor_name in vendor_ouis.items():
+            if oui.startswith(vendor_oui.replace(':', '')):
+                return vendor_name
+        
+        # Generic detection based on patterns
+        if oui.startswith('00'):
+            return 'Legacy'
+        elif oui.startswith(('AC', 'BC', 'CC')):
+            return 'Modern'
+        else:
+            return 'Unknown'
+
+    @staticmethod
+    def _detect_device_type(mac_address, probed_essids):
+        '''Detect device type based on MAC and probed networks'''
+        vendor = OpenMPI._detect_vendor_from_mac(mac_address)
+        probed = probed_essids.lower() if probed_essids else ''
+        
+        # Mobile devices
+        if vendor in ['Apple', 'Samsung'] or 'iphone' in probed or 'android' in probed:
+            return 'Mobile'
+        
+        # Laptops/Computers
+        if vendor in ['Intel', 'Microsoft'] or 'laptop' in probed or 'windows' in probed:
+            return 'Computer'
+        
+        # IoT devices
+        if any(iot_term in probed for iot_term in ['cam', 'iot', 'smart', 'ring', 'nest']):
+            return 'IoT'
+        
+        # Printers
+        if any(printer_term in probed for printer_term in ['print', 'canon', 'hp', 'epson']):
+            return 'Printer'
+        
+        # Gaming devices
+        if any(gaming_term in probed for gaming_term in ['xbox', 'playstation', 'nintendo']):
+            return 'Gaming'
+        
+        return 'Unknown'
+
+    @staticmethod
+    def _update_security_stats(network_stats, privacy, cipher, auth):
+        '''Update security statistics based on network parameters'''
+        privacy = privacy.lower() if privacy else ''
+        cipher = cipher.lower() if cipher else ''
+        auth = auth.lower() if auth else ''
+        
+        if 'eap' in auth or 'enterprise' in auth:
+            network_stats['enterprise_networks'] += 1
+        elif 'sae' in auth or 'wpa3' in privacy:
+            network_stats['wpa3_networks'] += 1
+        elif 'wpa2' in privacy or 'ccmp' in cipher:
+            network_stats['wpa2_networks'] += 1
+        elif 'wpa' in privacy and 'wpa2' not in privacy:
+            network_stats['wpa_networks'] += 1
+        elif 'wep' in privacy or 'wep' in cipher:
+            network_stats['wep_networks'] += 1
+        elif not privacy or privacy == '' or 'none' in privacy:
+            network_stats['open_networks'] += 1
+
+    @staticmethod
+    def _display_network_intelligence(network_stats, all_targets, all_clients):
+        '''Display comprehensive network intelligence analysis'''
+        from ..util.color import Color
+        
+        Color.pl('')
+        Color.pl('{+} {R}🥷 NINJA NETWORK INTELLIGENCE REPORT{W}')
+        Color.pl('{+} {G}=' * 60 + '{W}')
+        
+        # Network overview
+        Color.pl('{+} {C}📡 NETWORK OVERVIEW:{W}')
+        Color.pl('  {G}Total Networks:{W} {C}%d{W}' % network_stats['total_networks'])
+        Color.pl('  {G}Total Clients:{W} {C}%d{W}' % network_stats['total_clients'])
+        Color.pl('  {G}Hidden Networks:{W} {C}%d{W}' % network_stats['hidden_networks'])
+        Color.pl('  {G}Unique Vendors:{W} {C}%d{W}' % len(network_stats['unique_vendors']))
+        
+        # Security analysis
+        Color.pl('')
+        Color.pl('{+} {C}🔒 SECURITY ANALYSIS:{W}')
+        Color.pl('  {R}Open Networks:{W} {C}%d{W}' % network_stats['open_networks'])
+        Color.pl('  {O}WEP Networks:{W} {C}%d{W}' % network_stats['wep_networks'])
+        Color.pl('  {Y}WPA Networks:{W} {C}%d{W}' % network_stats['wpa_networks'])
+        Color.pl('  {G}WPA2 Networks:{W} {C}%d{W}' % network_stats['wpa2_networks'])
+        Color.pl('  {G}WPA3 Networks:{W} {C}%d{W}' % network_stats['wpa3_networks'])
+        Color.pl('  {B}Enterprise:{W} {C}%d{W}' % network_stats['enterprise_networks'])
+        
+        # Network types
+        if network_stats['network_types']:
+            Color.pl('')
+            Color.pl('{+} {C}🏷️  NETWORK TYPES:{W}')
+            for net_type, count in sorted(network_stats['network_types'].items(), key=lambda x: x[1], reverse=True):
+                Color.pl('  {G}%s:{W} {C}%d{W}' % (net_type, count))
+        
+        # Channel usage
+        if network_stats['channel_usage']:
+            Color.pl('')
+            Color.pl('{+} {C}📶 CHANNEL USAGE:{W}')
+            sorted_channels = sorted(network_stats['channel_usage'].items(), key=lambda x: x[1], reverse=True)[:10]
+            for channel, count in sorted_channels:
+                band = '2.4GHz' if channel <= 14 else '5GHz'
+                Color.pl('  {G}Ch %d (%s):{W} {C}%d networks{W}' % (channel, band, count))
+        
+        # Top vendors
+        if network_stats['unique_vendors']:
+            Color.pl('')
+            Color.pl('{+} {C}🏭 DETECTED VENDORS:{W}')
+            vendor_list = list(network_stats['unique_vendors'])[:10]
+            Color.pl('  {G}%s{W}' % ', '.join(vendor_list))
+        
+        # Risk assessment
+        Color.pl('')
+        Color.pl('{+} {C}⚠️  RISK ASSESSMENT:{W}')
+        total = network_stats['total_networks']
+        if total > 0:
+            risk_score = (
+                (network_stats['open_networks'] * 3) +
+                (network_stats['wep_networks'] * 2) +
+                (network_stats['wpa_networks'] * 1) +
+                (network_stats['hidden_networks'] * 1)
+            ) / total
+            
+            if risk_score > 2.0:
+                risk_level = '{R}HIGH{W}'
+            elif risk_score > 1.0:
+                risk_level = '{O}MEDIUM{W}'
+            else:
+                risk_level = '{G}LOW{W}'
+                
+            Color.pl('  {G}Environment Risk Level:{W} %s {C}(%.1f){W}' % (risk_level, risk_score))
+        
+        Color.pl('')
+        Color.pl('{+} {G}🥷 Ninja analysis complete!{W}')
