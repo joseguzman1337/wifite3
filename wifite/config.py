@@ -423,8 +423,9 @@ class Configuration(object):
             result += Color.s("{G}%s {W} {C}%s{W}\n" % (key.ljust(max_len),val))
         return result
 
-# VERSION constant for backward compatibility
+# Constants for backward compatibility
 VERSION = Configuration.version
+APP_NAME = 'wifite'
 
 if __name__ == '__main__':
     Configuration.initialize(False)
