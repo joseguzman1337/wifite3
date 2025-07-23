@@ -19,9 +19,7 @@ mock_config.hashcat_realtime_wordlist_dir = "/fake/wordlist_dir"
 mock_config.hashcat_realtime_options = None
 mock_config.hashcat_realtime_force_cpu = False
 mock_config.hashcat_realtime_gpu_devices = None
-mock_config.temp = lambda x: os.path.join(
-    "/tmp/wifite_test_temp", x
-)  # Mock temp dir
+mock_config.temp = lambda x: os.path.join("/tmp/wifite_test_temp", x)  # Mock temp dir
 mock_config.verbose = 0  # Default verbosity
 
 
@@ -35,9 +33,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         Configuration.hashcat_realtime_options = None
         Configuration.hashcat_realtime_force_cpu = False
         Configuration.hashcat_realtime_gpu_devices = None
-        Configuration.temp_dir = (
-            "/tmp/wifite_test_temp"  # Used by Configuration.temp()
-        )
+        Configuration.temp_dir = "/tmp/wifite_test_temp"  # Used by Configuration.temp()
         if not os.path.exists(Configuration.temp_dir):
             os.makedirs(Configuration.temp_dir)
 
@@ -45,9 +41,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         # specific tests can override its side_effect if needed.
         self.patcher_os_path_exists = patch("os.path.exists")
         self.mock_os_path_exists = self.patcher_os_path_exists.start()
-        self.mock_os_path_exists.return_value = (
-            True  # Default to files/dirs existing
-        )
+        self.mock_os_path_exists.return_value = True  # Default to files/dirs existing
 
         self.patcher_os_path_isfile = patch("os.path.isfile")
         self.mock_os_path_isfile = self.patcher_os_path_isfile.start()
@@ -84,19 +78,13 @@ class TestRealtimeCrackManager(unittest.TestCase):
 
     def test_load_wordlists_single_file_valid(self):
         Configuration.hashcat_realtime_wordlist_file = "/fake/wordlist.txt"
-        Configuration.hashcat_realtime_wordlist_dir = (
-            None  # Ensure dir is not used
-        )
+        Configuration.hashcat_realtime_wordlist_dir = None  # Ensure dir is not used
         self.manager._load_wordlists()
         self.assertEqual(len(self.manager.wordlist_queue), 1)
-        self.assertEqual(
-            self.manager.wordlist_queue[0], "/fake/wordlist.txt"
-        )
+        self.assertEqual(self.manager.wordlist_queue[0], "/fake/wordlist.txt")
 
     def test_load_wordlists_single_file_invalid(self):
-        Configuration.hashcat_realtime_wordlist_file = (
-            "/fake/nonexistent.txt"
-        )
+        Configuration.hashcat_realtime_wordlist_file = "/fake/nonexistent.txt"
         self.mock_os_path_exists.side_effect = lambda x: (
             False if x == "/fake/nonexistent.txt" else True
         )
@@ -115,9 +103,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
             "some.potfile",
         ]
         # os.path.isfile needs to be True for these paths
-        self.mock_os_path_isfile.side_effect = lambda x: x.endswith(
-            (".txt", ".lst")
-        )
+        self.mock_os_path_isfile.side_effect = lambda x: x.endswith((".txt", ".lst"))
 
         self.manager._load_wordlists()
         self.assertEqual(len(self.manager.wordlist_queue), 2)
@@ -159,21 +145,15 @@ class TestRealtimeCrackManager(unittest.TestCase):
     @patch.object(RealtimeCrackManager, "_load_wordlists")
     @patch.object(RealtimeCrackManager, "_try_next_wordlist")
     @patch.object(RealtimeCrackManager, "stop_current_crack_attempt")
-    def test_start_target_crack_session(
-        self, mock_stop, mock_try_next, mock_load_wl
-    ):
-        self.manager.active_session = (
-            MagicMock()
-        )  # Simulate an existing session
+    def test_start_target_crack_session(self, mock_stop, mock_try_next, mock_load_wl):
+        self.manager.active_session = MagicMock()  # Simulate an existing session
         self.manager.start_target_crack_session(
             "NEW_BSSID", "NewESSID", "/path/to/hash2.txt", 16800
         )
 
         mock_stop.assert_called_once_with(cleanup_hash_file=True)
         self.assertEqual(self.manager.current_target_bssid, "NEW_BSSID")
-        self.assertEqual(
-            self.manager.current_hash_file_path, "/path/to/hash2.txt"
-        )
+        self.assertEqual(self.manager.current_hash_file_path, "/path/to/hash2.txt")
         self.assertEqual(self.manager.current_hash_type, 16800)
         mock_load_wl.assert_called_once()
         mock_try_next.assert_called_once()
@@ -242,9 +222,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
 
         self.manager._try_next_wordlist()  # This will call mock_start_hashcat which returns None
 
-        self.assertEqual(
-            self.manager.consecutive_hashcat_errors, initial_errors + 1
-        )
+        self.assertEqual(self.manager.consecutive_hashcat_errors, initial_errors + 1)
         self.mock_color_pl.assert_any_call(
             f"{{R}}Real-time: Failed to start Hashcat with wordlist {{O}}{os.path.basename('/fake/wl1.txt')}{{R}} for {{C}}TARGET_BSSID{W}"
         )
@@ -318,9 +296,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         self.mock_color_pl.assert_any_call(
             f"{{G}}Real-time: Wordlist {{C}}{os.path.basename('/fake/wl_exhausted.txt')}{{W}} exhausted for {{C}}TARGET_BSSID{W}."
         )
-        mock_hashcat_stop.assert_called_once_with(
-            mock_session, cleanup_hash_file=False
-        )
+        mock_hashcat_stop.assert_called_once_with(mock_session, cleanup_hash_file=False)
         self.assertIsNone(self.manager.active_session)  # Should be cleared
         mock_try_next.assert_called_once()
 
@@ -336,9 +312,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
 
         self.manager.stop_current_crack_attempt(cleanup_hash_file=True)
 
-        mock_hashcat_stop.assert_called_once_with(
-            mock_session, cleanup_hash_file=True
-        )
+        mock_hashcat_stop.assert_called_once_with(mock_session, cleanup_hash_file=True)
         self.assertIsNone(self.manager.active_session)
         self.assertIsNone(
             self.manager.current_target_bssid

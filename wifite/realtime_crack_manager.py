@@ -31,7 +31,9 @@ class RealtimeCrackManager:
         self.wordlist_queue = []
         self.current_wordlist_path = None
         self.consecutive_hashcat_errors = 0
-        self.max_hashcat_errors = 3  # Stop trying after this many consecutive Hashcat start failures
+        self.max_hashcat_errors = (
+            3  # Stop trying after this many consecutive Hashcat start failures
+        )
         # Stores BSSID:password for already cracked targets in this Wifite session by real-time cracker
         self.realtime_cracked_passwords = {}
 
@@ -40,14 +42,9 @@ class RealtimeCrackManager:
         if Configuration.hashcat_realtime_wordlist_file:
             if (
                 os.path.exists(Configuration.hashcat_realtime_wordlist_file)
-                and os.path.getsize(
-                    Configuration.hashcat_realtime_wordlist_file
-                )
-                > 0
+                and os.path.getsize(Configuration.hashcat_realtime_wordlist_file) > 0
             ):
-                self.wordlist_queue.append(
-                    Configuration.hashcat_realtime_wordlist_file
-                )
+                self.wordlist_queue.append(Configuration.hashcat_realtime_wordlist_file)
             else:
                 Color.pl(
                     f"{{R}}Real-time: Specified wordlist file {{O}}{Configuration.hashcat_realtime_wordlist_file}{{R}} not found or empty.{W}"
@@ -56,18 +53,13 @@ class RealtimeCrackManager:
             if os.path.isdir(Configuration.hashcat_realtime_wordlist_dir):
                 try:
                     for filename in sorted(
-                        os.listdir(
-                            Configuration.hashcat_realtime_wordlist_dir
-                        )
+                        os.listdir(Configuration.hashcat_realtime_wordlist_dir)
                     ):
                         filepath = os.path.join(
                             Configuration.hashcat_realtime_wordlist_dir,
                             filename,
                         )
-                        if (
-                            os.path.isfile(filepath)
-                            and os.path.getsize(filepath) > 0
-                        ):
+                        if os.path.isfile(filepath) and os.path.getsize(filepath) > 0:
                             # Basic check: avoid adding .potfile, .out, .log etc.
                             if not any(
                                 ext in filename.lower()
@@ -128,9 +120,7 @@ class RealtimeCrackManager:
 
         self._load_wordlists()
         if not self.wordlist_queue:  # No wordlists found
-            self.current_target_bssid = (
-                None  # Clear target as we can't proceed
-            )
+            self.current_target_bssid = None  # Clear target as we can't proceed
             self.current_hash_file_path = None
             return
 
@@ -153,13 +143,9 @@ class RealtimeCrackManager:
             # Determine if the main hash file for this target was temporary (e.g. single PMKID string)
             cleanup_main_hash = (
                 self.current_hash_file_path
-                and self.current_hash_file_path.startswith(
-                    Configuration.temp()
-                )
+                and self.current_hash_file_path.startswith(Configuration.temp())
             )
-            self.stop_current_crack_attempt(
-                cleanup_hash_file=cleanup_main_hash
-            )
+            self.stop_current_crack_attempt(cleanup_hash_file=cleanup_main_hash)
             return
 
         if self.consecutive_hashcat_errors >= self.max_hashcat_errors:
@@ -168,13 +154,9 @@ class RealtimeCrackManager:
             )
             cleanup_main_hash = (
                 self.current_hash_file_path
-                and self.current_hash_file_path.startswith(
-                    Configuration.temp()
-                )
+                and self.current_hash_file_path.startswith(Configuration.temp())
             )
-            self.stop_current_crack_attempt(
-                cleanup_hash_file=cleanup_main_hash
-            )
+            self.stop_current_crack_attempt(cleanup_hash_file=cleanup_main_hash)
             return
 
         self.current_wordlist_path = self.wordlist_queue.pop(0)
@@ -188,9 +170,7 @@ class RealtimeCrackManager:
             user_prefs["opencl_device_types"] = "1"  # CPU
         elif Configuration.hashcat_realtime_gpu_devices:
             user_prefs["opencl_device_types"] = "2"  # GPU
-            user_prefs["opencl_device_ids"] = (
-                Configuration.hashcat_realtime_gpu_devices
-            )
+            user_prefs["opencl_device_ids"] = Configuration.hashcat_realtime_gpu_devices
 
         custom_options = (
             Configuration.hashcat_realtime_options.split()
@@ -218,9 +198,7 @@ class RealtimeCrackManager:
         if not self.active_session or not Configuration.hashcat_realtime:
             return None
 
-        status_info = Hashcat.check_realtime_crack_status(
-            self.active_session
-        )
+        status_info = Hashcat.check_realtime_crack_status(self.active_session)
 
         for line in status_info["status_lines"]:
             # Filter out common verbose lines unless very high verbosity is set
@@ -262,19 +240,13 @@ class RealtimeCrackManager:
             )
             crack_result.dump()  # Saves to cracked.json and cracked.txt
 
-            self.realtime_cracked_passwords[self.current_target_bssid] = (
-                password
-            )
+            self.realtime_cracked_passwords[self.current_target_bssid] = password
             # Determine if the main hash file that was cracked should be cleaned up
             cleanup_main_hash = (
                 self.current_hash_file_path
-                and self.current_hash_file_path.startswith(
-                    Configuration.temp()
-                )
+                and self.current_hash_file_path.startswith(Configuration.temp())
             )
-            self.stop_current_crack_attempt(
-                cleanup_hash_file=cleanup_main_hash
-            )
+            self.stop_current_crack_attempt(cleanup_hash_file=cleanup_main_hash)
             return self.current_target_bssid, password  # Signal success
 
         elif status_info["is_process_complete"]:
@@ -282,9 +254,7 @@ class RealtimeCrackManager:
                 f"{{G}}Real-time: Wordlist {{C}}{os.path.basename(self.current_wordlist_path)}{{W}} exhausted for {{C}}{self.current_target_bssid}{W}."
             )
             # Stop the session (cleans up session-specific pot/out files), but don't clean the main hash_file_path yet
-            Hashcat.stop_realtime_crack(
-                self.active_session, cleanup_hash_file=False
-            )
+            Hashcat.stop_realtime_crack(self.active_session, cleanup_hash_file=False)
             self.active_session = None
             self.current_wordlist_path = None  # Clear current wordlist
             self._try_next_wordlist()  # Attempt with the next wordlist
@@ -302,9 +272,7 @@ class RealtimeCrackManager:
             should_cleanup_session_hash_file = (
                 cleanup_hash_file
                 and self.active_session.hash_file_path
-                and self.active_session.hash_file_path.startswith(
-                    Configuration.temp()
-                )
+                and self.active_session.hash_file_path.startswith(Configuration.temp())
             )
             Hashcat.stop_realtime_crack(
                 self.active_session,
@@ -322,9 +290,7 @@ class RealtimeCrackManager:
             self.current_hash_file_path = None
             self.current_hash_type = None
             self.current_target_essid = None
-        self.current_wordlist_path = (
-            None  # Always clear current wordlist path
-        )
+        self.current_wordlist_path = None  # Always clear current wordlist path
         # Do not clear self.wordlist_queue here, it's managed by _load_wordlists and _try_next_wordlist
 
     def get_cracked_password(self, bssid: str):
@@ -333,7 +299,4 @@ class RealtimeCrackManager:
     def is_actively_cracking(self, bssid: str = None):
         if bssid is None:
             return self.active_session is not None
-        return (
-            self.active_session is not None
-            and self.current_target_bssid == bssid
-        )
+        return self.active_session is not None and self.current_target_bssid == bssid

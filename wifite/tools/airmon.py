@@ -98,9 +98,7 @@ class Airmon(Dependency):
         p = Process("airmon-ng")
         for line in p.stdout().split("\n"):
             # [PHY ]IFACE DRIVER CHIPSET
-            airmon_re = re.compile(
-                r"^(?:([^\t]*)\t+)?([^\t]*)\t+([^\t]*)\t+([^\t]*)$"
-            )
+            airmon_re = re.compile(r"^(?:([^\t]*)\t+)?([^\t]*)\t+([^\t]*)\t+([^\t]*)$")
             matches = airmon_re.match(line)
             if not matches:
                 continue
@@ -178,9 +176,7 @@ class Airmon(Dependency):
         # Remember this as the 'base' interface.
         Airmon.base_interface = iface_name
 
-        Color.p(
-            "{+} enabling {G}monitor mode{W} on {C}%s{W}... " % iface_name
-        )
+        Color.p("{+} enabling {G}monitor mode{W} on {C}%s{W}... " % iface_name)
 
         airmon_output = Process(["airmon-ng", "start", iface_name]).stdout()
 
@@ -203,9 +199,7 @@ class Airmon(Dependency):
         # Assert that the interface enabled by airmon-ng is in monitor mode
         if enabled_iface not in monitor_interfaces:
             Color.pl("{R}failed{W}")
-            raise Exception(
-                "Cannot find %s with Mode:Monitor" % enabled_iface
-            )
+            raise Exception("Cannot find %s with Mode:Monitor" % enabled_iface)
 
         # No errors found; the device 'enabled_iface' was put into Mode:Monitor.
         Color.pl("{G}enabled {C}%s{W}" % enabled_iface)
@@ -230,15 +224,11 @@ class Airmon(Dependency):
 
     @staticmethod
     def stop(iface):
-        Color.p(
-            "{!} {R}disabling {O}monitor mode{O} on {R}%s{O}... " % iface
-        )
+        Color.p("{!} {R}disabling {O}monitor mode{O} on {R}%s{O}... " % iface)
 
         airmon_output = Process(["airmon-ng", "stop", iface]).stdout()
 
-        (disabled_iface, enabled_iface) = Airmon._parse_airmon_stop(
-            airmon_output
-        )
+        (disabled_iface, enabled_iface) = Airmon._parse_airmon_stop(airmon_output)
 
         if not disabled_iface and iface in Airmon.BAD_DRIVERS:
             Color.p('{O}"bad driver" detected{W} ')
@@ -313,9 +303,7 @@ class Airmon(Dependency):
         count = len(a.interfaces)
         if count == 0:
             # No interfaces found
-            Color.pl(
-                "\n{!} {O}airmon-ng did not find {R}any{O} wireless interfaces"
-            )
+            Color.pl("\n{!} {O}airmon-ng did not find {R}any{O} wireless interfaces")
             Color.pl("{!} {O}Make sure your wireless device is connected")
             Color.pl(
                 "{!} {O}See {C}http://www.aircrack-ng.org/doku.php?id=airmon-ng{O} for more info{W}"
@@ -332,17 +320,13 @@ class Airmon(Dependency):
             choice = 1
         else:
             # Multiple interfaces found
-            question = Color.s(
-                "{+} Select wireless interface ({G}1-%d{W}): " % (count)
-            )
+            question = Color.s("{+} Select wireless interface ({G}1-%d{W}): " % (count))
             choice = raw_input(question)
 
         iface = a.get(choice)
 
         if a.get(choice).interface in monitor_interfaces:
-            Color.pl(
-                "{+} {G}%s{W} is already in monitor mode" % iface.interface
-            )
+            Color.pl("{+} {G}%s{W} is already in monitor mode" % iface.interface)
         else:
             iface.interface = Airmon.start(iface)
         return iface.interface
@@ -372,10 +356,7 @@ class Airmon(Dependency):
         if not Configuration.kill_conflicting_processes:
             # Don't kill processes, warn user
             names_and_pids = ", ".join(
-                [
-                    "{R}%s{O} (PID {R}%s{O})" % (pname, pid)
-                    for pid, pname in pid_pnames
-                ]
+                ["{R}%s{O} (PID {R}%s{O})" % (pname, pid) for pid, pname in pid_pnames]
             )
             Color.pl("{!} {O}Conflicting processes: %s" % names_and_pids)
             Color.pl(
@@ -383,9 +364,7 @@ class Airmon(Dependency):
             )
             return
 
-        Color.pl(
-            "{!} {O}Killing {R}%d {O}conflicting processes" % len(pid_pnames)
-        )
+        Color.pl("{!} {O}Killing {R}%d {O}conflicting processes" % len(pid_pnames))
         for pid, pname in pid_pnames:
             if pname == "NetworkManager" and Process.exists("service"):
                 Color.pl(

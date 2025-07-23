@@ -12,9 +12,7 @@ class Arguments(object):
 
     def __init__(self, configuration):
         # Hack: Check for -v before parsing args; so we know which commands to display.
-        self.verbose = (
-            "-v" in sys.argv or "-hv" in sys.argv or "-vh" in sys.argv
-        )
+        self.verbose = "-v" in sys.argv or "-hv" in sys.argv or "-vh" in sys.argv
         self.config = configuration
         self.args = self.get_arguments()
 
@@ -34,24 +32,16 @@ class Arguments(object):
             ),
         )
 
-        self._add_global_args(
-            parser.add_argument_group(Color.s("{C}SETTINGS{W}"))
-        )
+        self._add_global_args(parser.add_argument_group(Color.s("{C}SETTINGS{W}")))
         self._add_wep_args(parser.add_argument_group(Color.s("{C}WEP{W}")))
         self._add_wpa_args(parser.add_argument_group(Color.s("{C}WPA{W}")))
         self._add_wps_args(parser.add_argument_group(Color.s("{C}WPS{W}")))
-        self._add_pmkid_args(
-            parser.add_argument_group(Color.s("{C}PMKID{W}"))
-        )
+        self._add_pmkid_args(parser.add_argument_group(Color.s("{C}PMKID{W}")))
         self._add_hashcat_realtime_args(
             parser.add_argument_group(Color.s("{C}REALTIME HASHCAT{W}"))
         )
-        self._add_eviltwin_args(
-            parser.add_argument_group(Color.s("{C}EVIL TWIN{W}"))
-        )
-        self._add_command_args(
-            parser.add_argument_group(Color.s("{C}COMMANDS{W}"))
-        )
+        self._add_eviltwin_args(parser.add_argument_group(Color.s("{C}EVIL TWIN{W}")))
+        self._add_command_args(parser.add_argument_group(Color.s("{C}COMMANDS{W}")))
 
         return parser.parse_args()
 
@@ -144,9 +134,7 @@ class Arguments(object):
             dest="channel",
             metavar="[channel]",
             type=int,
-            help=Color.s(
-                "Wireless channel to scan (default: {G}all 2Ghz channels{W})"
-            ),
+            help=Color.s("Wireless channel to scan (default: {G}all 2Ghz channels{W})"),
         )
         glob.add_argument(
             "--channel",
@@ -169,9 +157,7 @@ class Arguments(object):
             "--random-mac",
             action="store_true",
             dest="random_mac",
-            help=Color.s(
-                "Randomize wireless card MAC address (default: {G}off{W})"
-            ),
+            help=Color.s("Randomize wireless card MAC address (default: {G}off{W})"),
         )
 
         glob.add_argument(
@@ -183,8 +169,7 @@ class Arguments(object):
             metavar="scan_time",
             type=int,
             help=Color.s(
-                "{G}Pillage{W}: Attack all targets after "
-                + "{C}scan_time{W} (seconds)"
+                "{G}Pillage{W}: Attack all targets after " + "{C}scan_time{W} (seconds)"
             ),
         )
         glob.add_argument(
@@ -214,8 +199,7 @@ class Arguments(object):
             metavar="[bssid]",
             type=str,
             help=self._verbose(
-                "BSSID (e.g. {GR}AA:BB:CC:DD:EE:FF{W}) of access "
-                + "point to attack"
+                "BSSID (e.g. {GR}AA:BB:CC:DD:EE:FF{W}) of access " + "point to attack"
             ),
         )
         glob.add_argument(
@@ -251,9 +235,7 @@ class Arguments(object):
             metavar="[text]",
             type=str,
             default=None,
-            help=self._verbose(
-                "Hides targets with ESSIDs that match the given text"
-            ),
+            help=self._verbose("Hides targets with ESSIDs that match the given text"),
         )
         glob.add_argument(
             "--ignore-essid",
@@ -345,9 +327,7 @@ class Arguments(object):
             "--require-fakeauth",
             action="store_true",
             dest="require_fakeauth",
-            help=Color.s(
-                "Fails attacks if {C}fake-auth{W} fails (default: {G}off{W})"
-            ),
+            help=Color.s("Fails attacks if {C}fake-auth{W} fails (default: {G}off{W})"),
         )
         wep.add_argument(
             "--nofakeauth",
@@ -368,8 +348,7 @@ class Arguments(object):
             dest="wep_keep_ivs",
             default=False,
             help=Color.s(
-                "Retain .IVS files and reuse when cracking "
-                + "(default: {G}off{W})"
+                "Retain .IVS files and reuse when cracking " + "(default: {G}off{W})"
             ),
         )
 
@@ -472,9 +451,7 @@ class Arguments(object):
             "--arpreplay",
             action="store_true",
             dest="wep_attack_replay",
-            help=self._verbose(
-                "Use {C}ARP-replay{W} WEP attack (default: {G}on{W})"
-            ),
+            help=self._verbose("Use {C}ARP-replay{W} WEP attack (default: {G}on{W})"),
         )
         wep.add_argument(
             "-arpreplay",
@@ -502,9 +479,7 @@ class Arguments(object):
             "--chopchop",
             action="store_true",
             dest="wep_attack_chopchop",
-            help=self._verbose(
-                "Use {C}chop-chop{W} WEP attack (default: {G}on{W})"
-            ),
+            help=self._verbose("Use {C}chop-chop{W} WEP attack (default: {G}on{W})"),
         )
         wep.add_argument(
             "-chopchop",
@@ -517,9 +492,7 @@ class Arguments(object):
             "--caffelatte",
             action="store_true",
             dest="wep_attack_caffe",
-            help=self._verbose(
-                "Use {C}caffe-latte{W} WEP attack (default: {G}on{W})"
-            ),
+            help=self._verbose("Use {C}caffe-latte{W} WEP attack (default: {G}on{W})"),
         )
         wep.add_argument(
             "-caffelatte",
@@ -532,9 +505,7 @@ class Arguments(object):
             "--p0841",
             action="store_true",
             dest="wep_attack_p0841",
-            help=self._verbose(
-                "Use {C}p0841{W} WEP attack (default: {G}on{W})"
-            ),
+            help=self._verbose("Use {C}p0841{W} WEP attack (default: {G}on{W})"),
         )
         wep.add_argument(
             "-p0841",
@@ -547,9 +518,7 @@ class Arguments(object):
             "--hirte",
             action="store_true",
             dest="wep_attack_hirte",
-            help=self._verbose(
-                "Use {C}hirte{W} WEP attack (default: {G}on{W})"
-            ),
+            help=self._verbose("Use {C}hirte{W} WEP attack (default: {G}on{W})"),
         )
         wep.add_argument(
             "-hirte",
@@ -563,9 +532,7 @@ class Arguments(object):
             "--wpa",
             action="store_true",
             dest="wpa_filter",
-            help=Color.s(
-                "Show only {C}WPA-encrypted networks{W} (includes {C}WPS{W})"
-            ),
+            help=Color.s("Show only {C}WPA-encrypted networks{W} (includes {C}WPS{W})"),
         )
         wpa.add_argument(
             "-wpa",
@@ -599,8 +566,7 @@ class Arguments(object):
             dest="ignore_old_handshakes",
             help=Color.s(
                 "Captures new handshakes, ignores existing handshakes "
-                + "in {C}%s{W} (default: {G}off{W})"
-                % self.config.wpa_handshake_dir
+                + "in {C}%s{W} (default: {G}off{W})" % self.config.wpa_handshake_dir
             ),
         )
 
@@ -610,9 +576,7 @@ class Arguments(object):
             dest="wordlist",
             metavar="[file]",
             type=str,
-            help=Color.s(
-                "File containing passwords for cracking (default: {G}%s{W})"
-            )
+            help=Color.s("File containing passwords for cracking (default: {G}%s{W})")
             % self.config.wordlist,
         )
 
@@ -781,8 +745,7 @@ class Arguments(object):
             type=int,
             help=self._verbose(
                 "Maximum number of WPSFail/NoAssoc errors before "
-                + "failing (default: {G}%d{W})"
-                % self.config.wps_fail_threshold
+                + "failing (default: {G}%d{W})" % self.config.wps_fail_threshold
             ),
         )
         # Alias

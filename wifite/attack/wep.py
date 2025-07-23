@@ -70,9 +70,7 @@ class AttackWEP(Attack):
                     if self.fake_auth():
                         # We successfully authenticated!
                         # Use our interface's MAC address for the attacks.
-                        client_mac = Ifconfig.get_mac(
-                            Configuration.interface
-                        )
+                        client_mac = Ifconfig.get_mac(Configuration.interface)
                         # Keep us authenticated
                         fakeauth_proc = Aireplay(self.target, "fakeauth")
                     elif len(airodump_target.clients) == 0:
@@ -99,9 +97,7 @@ class AttackWEP(Attack):
                         replay_file=replay_file,
                     )
 
-                    time_unchanged_ivs = (
-                        time.time()
-                    )  # Timestamp when IVs last changed
+                    time_unchanged_ivs = time.time()  # Timestamp when IVs last changed
                     last_ivs_count = 0
 
                     # Loop until attack completes.
@@ -109,10 +105,7 @@ class AttackWEP(Attack):
                     while True:
                         airodump_target = self.wait_for_target(airodump)
 
-                        if (
-                            client_mac is None
-                            and len(airodump_target.clients) > 0
-                        ):
+                        if client_mac is None and len(airodump_target.clients) > 0:
                             client_mac = airodump_target.clients[0].station
 
                         if keep_ivs and current_ivs > airodump_target.ivs:
@@ -143,9 +136,7 @@ class AttackWEP(Attack):
 
                         # Check if we cracked it.
                         if aircrack and aircrack.is_cracked():
-                            (hex_key, ascii_key) = (
-                                aircrack.get_key_hex_ascii()
-                            )
+                            (hex_key, ascii_key) = aircrack.get_key_hex_ascii()
                             bssid = airodump_target.bssid
                             if airodump_target.essid_known:
                                 essid = airodump_target.essid
@@ -180,9 +171,7 @@ class AttackWEP(Attack):
                         if total_ivs > Configuration.wep_crack_at_ivs:
                             if not aircrack or not aircrack.is_running():
                                 # Aircrack hasn't started yet. Start it.
-                                ivs_files = airodump.find_files(
-                                    endswith=".ivs"
-                                )
+                                ivs_files = airodump.find_files(endswith=".ivs")
                                 ivs_files.sort()
                                 if len(ivs_files) > 0:
                                     if not keep_ivs:
@@ -199,9 +188,7 @@ class AttackWEP(Attack):
                                 # Restart aircrack after X seconds
                                 # Color.pl('\n{+} {C}aircrack{W} ran for more than {C}%d{W} seconds, restarting' % Configuration.wep_restart_aircrack)
                                 aircrack.stop()
-                                ivs_files = airodump.find_files(
-                                    endswith=".ivs"
-                                )
+                                ivs_files = airodump.find_files(endswith=".ivs")
                                 ivs_files.sort()
                                 if len(ivs_files) > 0:
                                     if not keep_ivs:
@@ -212,10 +199,7 @@ class AttackWEP(Attack):
 
                         if not aireplay.is_running():
                             # Some Aireplay attacks loop infinitely
-                            if (
-                                attack_name == "chopchop"
-                                or attack_name == "fragment"
-                            ):
+                            if attack_name == "chopchop" or attack_name == "fragment":
                                 # We expect these to stop once a .xor is created, or if the process failed.
 
                                 replay_file = None
@@ -254,9 +238,7 @@ class AttackWEP(Attack):
                                         "{+} {C}forged packet{W},"
                                         + " {G}replaying...{W}"
                                     )
-                                    wep_attack_type = WEPAttackType(
-                                        "forgedreplay"
-                                    )
+                                    wep_attack_type = WEPAttackType("forgedreplay")
                                     attack_name = "forgedreplay"
                                     aireplay = Aireplay(
                                         self.target,
@@ -272,16 +254,12 @@ class AttackWEP(Attack):
                                     # Failed to forge packet. drop out
                                     break
                             else:
+                                Color.pl("\n{!} {O}aireplay-ng exited unexpectedly{W}")
                                 Color.pl(
-                                    "\n{!} {O}aireplay-ng exited unexpectedly{W}"
+                                    "{?} {O}Command: {R}%s{W}" % " ".join(aireplay.cmd)
                                 )
                                 Color.pl(
-                                    "{?} {O}Command: {R}%s{W}"
-                                    % " ".join(aireplay.cmd)
-                                )
-                                Color.pl(
-                                    "{?} {O}Output:\n{R}%s{W}"
-                                    % aireplay.get_output()
+                                    "{?} {O}Output:\n{R}%s{W}" % aireplay.get_output()
                                 )
                                 break  # Continue to other attacks
 
@@ -294,16 +272,12 @@ class AttackWEP(Attack):
                             and attack_name != "fragment"
                         ):
                             stale_seconds = time.time() - time_unchanged_ivs
-                            if (
-                                stale_seconds
-                                > Configuration.wep_restart_stale_ivs
-                            ):
+                            if stale_seconds > Configuration.wep_restart_stale_ivs:
                                 # No new IVs within threshold, restart aireplay
                                 aireplay.stop()
                                 Color.pl(
                                     "\n{!} restarting {C}aireplay{W} after"
-                                    + " {C}%d{W} seconds of no new IVs"
-                                    % stale_seconds
+                                    + " {C}%d{W} seconds of no new IVs" % stale_seconds
                                 )
                                 aireplay = Aireplay(
                                     self.target,
@@ -387,11 +361,7 @@ class AttackWEP(Attack):
             answer = raw_input(
                 Color.s("{?} Select an option ({G}1-%d{W}): " % attack_index)
             )
-            if (
-                not answer.isdigit()
-                or int(answer) < 1
-                or int(answer) > attack_index
-            ):
+            if not answer.isdigit() or int(answer) < 1 or int(answer) > attack_index:
                 Color.pl(
                     "{!} {R}Invalid input: {O}Must enter a number between {G}1-%d{W}"
                     % attack_index
@@ -405,9 +375,7 @@ class AttackWEP(Attack):
             deauth_count = 1
             Color.clear_entire_line()
 
-            Color.p(
-                "\r{+} {O}Deauthenticating *broadcast*{W} (all clients)..."
-            )
+            Color.p("\r{+} {O}Deauthenticating *broadcast*{W} (all clients)...")
             Aireplay.deauth(target.bssid, essid=target.essid)
 
             attacking_mac = Ifconfig.get_mac(Configuration.interface)
@@ -416,10 +384,7 @@ class AttackWEP(Attack):
                     continue  # Don't deauth ourselves.
 
                 Color.clear_entire_line()
-                Color.p(
-                    "\r{+} {O}Deauthenticating client {C}%s{W}..."
-                    % client.station
-                )
+                Color.p("\r{+} {O}Deauthenticating client {C}%s{W}..." % client.station)
 
                 Aireplay.deauth(
                     target.bssid,
@@ -450,9 +415,7 @@ class AttackWEP(Attack):
             "\r{+} attempting {G}fake-authentication{W} with {C}%s{W}..."
             % self.target.bssid
         )
-        fakeauth = Aireplay.fakeauth(
-            self.target, timeout=AttackWEP.fakeauth_wait
-        )
+        fakeauth = Aireplay.fakeauth(self.target, timeout=AttackWEP.fakeauth_wait)
         if fakeauth:
             Color.pl(" {G}success{W}")
         else:

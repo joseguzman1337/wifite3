@@ -48,9 +48,7 @@ class Scanner(object):
                     if airodump.pid.poll() is not None:
                         return  # Airodump process died
 
-                    self.targets = airodump.get_targets(
-                        old_targets=self.targets
-                    )
+                    self.targets = airodump.get_targets(old_targets=self.targets)
 
                     if self.found_target():
                         return  # We found the target we want
@@ -77,10 +75,7 @@ class Scanner(object):
                     Color.clear_entire_line()
                     Color.p(outline)
 
-                    if (
-                        max_scan_time > 0
-                        and time() > scan_start_time + max_scan_time
-                    ):
+                    if max_scan_time > 0 and time() > scan_start_time + max_scan_time:
                         return
 
                     sleep(1)
@@ -99,9 +94,7 @@ class Scanner(object):
 
             # Check if OpenMPI is available
             if not OpenMPI.exists():
-                Color.pl(
-                    "{!} {O}OpenMPI not available, using traditional scan{W}"
-                )
+                Color.pl("{!} {O}OpenMPI not available, using traditional scan{W}")
                 return None
 
             Color.pl("")  # Empty line for spacing
@@ -132,8 +125,7 @@ class Scanner(object):
                         # Apply filters
                         if (
                             Configuration.target_channel
-                            and target.channel
-                            != Configuration.target_channel
+                            and target.channel != Configuration.target_channel
                         ):
                             continue
                         if (
@@ -147,10 +139,7 @@ class Scanner(object):
                             != Configuration.target_bssid.lower()
                         ):
                             continue
-                        if (
-                            Configuration.clients_only
-                            and len(target.clients) == 0
-                        ):
+                        if Configuration.clients_only and len(target.clients) == 0:
                             continue
 
                         targets.append(target)
@@ -197,18 +186,10 @@ class Scanner(object):
                 WPSState.LOCKED,
             ]:
                 continue
-            if (
-                bssid
-                and target.bssid
-                and bssid.lower() == target.bssid.lower()
-            ):
+            if bssid and target.bssid and bssid.lower() == target.bssid.lower():
                 self.target = target
                 break
-            if (
-                essid
-                and target.essid
-                and essid.lower() == target.essid.lower()
-            ):
+            if essid and target.essid and essid.lower() == target.essid.lower():
                 self.target = target
                 break
 
@@ -233,8 +214,7 @@ class Scanner(object):
                 # Don't clear screen buffer in verbose mode.
                 if (
                     self.previous_target_count > len(self.targets)
-                    or Scanner.get_terminal_height()
-                    < self.previous_target_count + 3
+                    or Scanner.get_terminal_height() < self.previous_target_count + 3
                 ):
                     # Either:
                     # 1) We have less targets than before, so we can't overwrite the previous list
@@ -246,9 +226,7 @@ class Scanner(object):
                 else:
                     # We can fit the targets in the terminal without scrolling
                     # 'Move' cursor up so we will print over the previous list
-                    Color.pl(
-                        Scanner.UP_CHAR * (3 + self.previous_target_count)
-                    )
+                    Color.pl(Scanner.UP_CHAR * (3 + self.previous_target_count))
 
         self.previous_target_count = len(self.targets)
 

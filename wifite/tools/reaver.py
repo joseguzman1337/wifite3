@@ -108,9 +108,7 @@ class Reaver(Attack, Dependency):
             self.reaver_proc.stdin("y\n")
 
             # Loop while reaver is running
-            while (
-                self.crack_result is None and self.reaver_proc.poll() is None
-            ):
+            while self.crack_result is None and self.reaver_proc.poll() is None:
 
                 # Refresh target information (power)
                 self.target = self.wait_for_target(airodump)
@@ -140,13 +138,9 @@ class Reaver(Attack, Dependency):
             if self.crack_result is None:
                 self.parse_failure(stdout)
 
-            if (
-                self.crack_result is None
-                and self.reaver_proc.poll() is not None
-            ):
+            if self.crack_result is None and self.reaver_proc.poll() is not None:
                 raise Exception(
-                    "Reaver process stopped (exit code: %s)"
-                    % self.reaver_proc.poll()
+                    "Reaver process stopped (exit code: %s)" % self.reaver_proc.poll()
                 )
 
     def get_status(self):
@@ -189,8 +183,7 @@ class Reaver(Attack, Dependency):
             if psk is not None:
                 # Reaver provided PSK
                 self.pattack(
-                    "{G}Cracked WPS PIN: {C}%s{W} {G}PSK: {C}%s{W}"
-                    % (pin, psk),
+                    "{G}Cracked WPS PIN: {C}%s{W} {G}PSK: {C}%s{W}" % (pin, psk),
                     newline=True,
                 )
             else:
@@ -205,13 +198,9 @@ class Reaver(Attack, Dependency):
                     pass
                 if psk is None:
                     Color.pl("")
-                    self.pattack(
-                        "{R}Failed {O}to get PSK using bully", newline=True
-                    )
+                    self.pattack("{R}Failed {O}to get PSK using bully", newline=True)
                 else:
-                    self.pattack(
-                        "{G}Cracked WPS PSK: {C}%s" % psk, newline=True
-                    )
+                    self.pattack("{G}Cracked WPS PSK: {C}%s" % psk, newline=True)
 
             crack_result = CrackResultWPS(self.target.bssid, ssid, pin, psk)
             crack_result.dump()
@@ -225,10 +214,7 @@ class Reaver(Attack, Dependency):
             raise Exception('Reaver says "WPS pin not found"')
 
         # Running-time failure
-        if (
-            self.pixie_dust
-            and self.running_time() > Configuration.wps_pixie_timeout
-        ):
+        if self.pixie_dust and self.running_time() > Configuration.wps_pixie_timeout:
             raise Exception(
                 "Timeout after %d seconds" % Configuration.wps_pixie_timeout
             )
@@ -357,9 +343,7 @@ class Reaver(Attack, Dependency):
 
         if pin is None:
             """[+] WPS PIN: '11867722'"""
-            regex = re.search(
-                r"WPS PIN:\s*'([0-9]+)'", stdout, re.IGNORECASE
-            )
+            regex = re.search(r"WPS PIN:\s*'([0-9]+)'", stdout, re.IGNORECASE)
             if regex:
                 pin = regex.group(1)
 
@@ -379,9 +363,7 @@ class Reaver(Attack, Dependency):
         # Check (again) for SSID
         if ssid is None:
             """1.6.x [+] Associated with EC:1A:59:37:70:0E (ESSID: belkin.00e)"""
-            regex = re.search(
-                r"Associated with [0-9A-F:]+ \(ESSID: (.*)\)", stdout
-            )
+            regex = re.search(r"Associated with [0-9A-F:]+ \(ESSID: (.*)\)", stdout)
             if regex:
                 ssid = regex.group(1)
 
@@ -468,38 +450,28 @@ executing pixiewps -e d0141b15656e96b85fcead2e8e76330d2b1ac1576bb026e7a328c0e1ba
 """
 
     (pin, psk, ssid) = Reaver.get_pin_psk_ssid(old_stdout)
-    assert pin == "12345678", (
-        'pin was "%s", should have been "12345678"' % pin
+    assert pin == "12345678", 'pin was "%s", should have been "12345678"' % pin
+    assert psk == "Test PSK", 'psk was "%s", should have been "Test PSK"' % psk
+    assert ssid == "Test Router", "ssid was %s, should have been Test Router" % repr(
+        ssid
     )
-    assert psk == "Test PSK", (
-        'psk was "%s", should have been "Test PSK"' % psk
-    )
-    assert (
-        ssid == "Test Router"
-    ), "ssid was %s, should have been Test Router" % repr(ssid)
     result = CrackResultWPS("AA:BB:CC:DD:EE:FF", ssid, pin, psk)
     result.dump()
     print("")
 
     (pin, psk, ssid) = Reaver.get_pin_psk_ssid(new_stdout)
-    assert pin == "11867722", (
-        'pin was "%s", should have been "11867722"' % pin
-    )
+    assert pin == "11867722", 'pin was "%s", should have been "11867722"' % pin
     assert psk is None, 'psk was "%s", should have been "None"' % psk
-    assert (
-        ssid == "belkin.00e"
-    ), 'ssid was "%s", should have been "belkin.00e"' % repr(ssid)
+    assert ssid == "belkin.00e", 'ssid was "%s", should have been "belkin.00e"' % repr(
+        ssid
+    )
     result = CrackResultWPS("AA:BB:CC:DD:EE:FF", ssid, pin, psk)
     result.dump()
     print("")
 
     (pin, psk, ssid) = Reaver.get_pin_psk_ssid(pin_attack_stdout)
-    assert pin == "01030365", (
-        'pin was "%s", should have been "01030365"' % pin
-    )
-    assert psk == "password", (
-        'psk was "%s", should have been "password"' % psk
-    )
+    assert pin == "01030365", 'pin was "%s", should have been "01030365"' % pin
+    assert psk == "password", 'psk was "%s", should have been "password"' % psk
     assert (
         ssid == "AirLink89300"
     ), 'ssid was "%s", should have been "AirLink89300"' % repr(ssid)

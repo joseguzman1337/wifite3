@@ -27,9 +27,7 @@ def main():
     # Demo apps list
     demo_apps = [Aircrack, Pyrit, HcxPcapTool]
 
-    Color.pl(
-        "{+} {G}🥷 NINJA AUTO-INSTALL DEMO:{W} Testing dependency checking..."
-    )
+    Color.pl("{+} {G}🥷 NINJA AUTO-INSTALL DEMO:{W} Testing dependency checking...")
 
     try:
         Dependency.auto_install_dependencies(demo_apps)

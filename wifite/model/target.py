@@ -59,9 +59,7 @@ class Target(object):
             self.encryption = "WEP"
         else:
             # Fallback for open or unknown networks, ensure it's not too long
-            self.encryption = privacy_str.split(" ")[
-                0
-            ]  # Take the first part
+            self.encryption = privacy_str.split(" ")[0]  # Take the first part
             if len(self.encryption) > 4:
                 self.encryption = self.encryption[0:4].strip()
 
@@ -69,14 +67,10 @@ class Target(object):
         # Speed is at fields[4]
         speed_str = fields[4].strip()
         mb_val = 0
-        self.has_qos = (
-            "e" in speed_str
-        )  # Airodump appends 'e' for QoS (802.11e)
+        self.has_qos = "e" in speed_str  # Airodump appends 'e' for QoS (802.11e)
         if speed_str:
             # Remove 'e' and any other non-numeric parts for parsing
-            numeric_part = "".join(
-                filter(str.isdigit, speed_str.split(".")[0])
-            )
+            numeric_part = "".join(filter(str.isdigit, speed_str.split(".")[0]))
             if numeric_part:
                 mb_val = int(numeric_part)
 
@@ -85,9 +79,7 @@ class Target(object):
             self.wifi_standard = "be"
         elif mb_val >= 1200:  # Wi-Fi 6 (802.11ax) common rates
             self.wifi_standard = "ax"
-        elif (
-            mb_val > 54
-        ):  # Speeds potentially indicating 802.11n or 802.11ac
+        elif mb_val > 54:  # Speeds potentially indicating 802.11n or 802.11ac
             if mb_val >= 300:  # Higher speeds are more likely ac
                 self.wifi_standard = "ac"
             else:  # Lower end of "high speeds" could be n
@@ -101,9 +93,7 @@ class Target(object):
         if self.has_qos and self.wifi_standard in ["g", "b"]:
             # If it's g/b but has QoS, it's likely n (or at least g with e).
             # For simplicity, let's ensure 'n' if QoS is present and not already ac/ax/be
-            if (
-                self.wifi_standard == "g"
-            ):  # g with QoS often implies n capabilities
+            if self.wifi_standard == "g":  # g with QoS often implies n capabilities
                 self.wifi_standard = "n"
 
         self.power = int(fields[8].strip())
@@ -143,17 +133,11 @@ class Target(object):
             r"^(ff:ff:ff:ff:ff:ff|00:00:00:00:00:00)$", re.IGNORECASE
         )
         if bssid_broadcast.match(self.bssid):
-            raise Exception(
-                "Ignoring target with Broadcast BSSID (%s)" % self.bssid
-            )
+            raise Exception("Ignoring target with Broadcast BSSID (%s)" % self.bssid)
 
-        bssid_multicast = re.compile(
-            r"^(01:00:5e|01:80:c2|33:33)", re.IGNORECASE
-        )
+        bssid_multicast = re.compile(r"^(01:00:5e|01:80:c2|33:33)", re.IGNORECASE)
         if bssid_multicast.match(self.bssid):
-            raise Exception(
-                "Ignoring target with Multicast BSSID (%s)" % self.bssid
-            )
+            raise Exception("Ignoring target with Multicast BSSID (%s)" % self.bssid)
 
     def to_str(self, show_bssid=False):
         """
@@ -199,9 +183,7 @@ class Target(object):
         channel_color = "{G}"
         if int(self.channel) > 14:
             channel_color = "{C}"
-        channel = Color.s(
-            "%s%s" % (channel_color, str(self.channel).rjust(3))
-        )
+        channel = Color.s("%s%s" % (channel_color, str(self.channel).rjust(3)))
 
         encryption = self.encryption.rjust(4)
         if "WEP" in encryption:
@@ -238,9 +220,7 @@ class Target(object):
             clients = Color.s("{G}  " + str(len(self.clients)))
 
         result = "%s  %s%s  %s  %s  %s  %s" % (
-            essid_display.ljust(
-                max_essid_len + 8
-            ),  # Adjusted ljust for new std_str
+            essid_display.ljust(max_essid_len + 8),  # Adjusted ljust for new std_str
             bssid,
             channel,
             encryption,

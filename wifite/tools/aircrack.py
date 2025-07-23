@@ -105,12 +105,8 @@ class Aircrack(Dependency):
         crack_proc = Process(command)
 
         # Report progress of cracking
-        aircrack_nums_re = re.compile(
-            r"(\d+)/(\d+) keys tested.*\(([\d.]+)\s+k/s"
-        )
-        aircrack_key_re = re.compile(
-            r"Current passphrase:\s*([^\s].*[^\s])\s*$"
-        )
+        aircrack_nums_re = re.compile(r"(\d+)/(\d+) keys tested.*\(([\d.]+)\s+k/s")
+        aircrack_key_re = re.compile(r"Current passphrase:\s*([^\s].*[^\s])\s*$")
         num_tried = num_total = 0
         percent = num_kps = 0.0
         eta_str = "unknown"
@@ -163,9 +159,7 @@ if __name__ == "__main__":
     assert hexkey == "61:62:63:64:65", (
         'hexkey was "%s", expected "61:62:63:64:65"' % hexkey
     )
-    assert asciikey == "abcde", (
-        'asciikey was "%s", expected "abcde"' % asciikey
-    )
+    assert asciikey == "abcde", 'asciikey was "%s", expected "abcde"' % asciikey
 
     from time import sleep
 
@@ -178,21 +172,14 @@ if __name__ == "__main__":
     while aircrack.is_running():
         sleep(1)
 
-    assert aircrack.is_cracked(), (
-        "Aircrack should have cracked %s" % ivs_file
-    )
+    assert aircrack.is_cracked(), "Aircrack should have cracked %s" % ivs_file
     print("aircrack process completed.")
 
     (hexkey, asciikey) = aircrack.get_key_hex_ascii()
-    print(
-        "aircrack found HEX key: (%s) and ASCII key: (%s)"
-        % (hexkey, asciikey)
-    )
+    print("aircrack found HEX key: (%s) and ASCII key: (%s)" % (hexkey, asciikey))
     assert hexkey == "75:6E:63:6C:65", (
         'hexkey was "%s", expected "75:6E:63:6C:65"' % hexkey
     )
-    assert asciikey == "uncle", (
-        'asciikey was "%s", expected "uncle"' % asciikey
-    )
+    assert asciikey == "uncle", 'asciikey was "%s", expected "uncle"' % asciikey
 
     Configuration.exit_gracefully(0)

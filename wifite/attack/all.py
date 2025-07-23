@@ -35,22 +35,15 @@ class AttackAll(object):
             targets_remaining -= 1
 
             # Check if this target was already cracked by the real-time manager
-            if (
-                realtime_crack_manager
-                and realtime_crack_manager.get_cracked_password(target.bssid)
+            if realtime_crack_manager and realtime_crack_manager.get_cracked_password(
+                target.bssid
             ):
                 Color.pl(
                     "\n{+} Target {C}%s{W} ({C}%s{W}) already cracked by real-time manager. Password: {G}%s{W}"
                     % (
                         target.bssid,
-                        (
-                            target.essid
-                            if target.essid_known
-                            else "{O}ESSID unknown{W}"
-                        ),
-                        realtime_crack_manager.get_cracked_password(
-                            target.bssid
-                        ),
+                        (target.essid if target.essid_known else "{O}ESSID unknown{W}"),
+                        realtime_crack_manager.get_cracked_password(target.bssid),
                     )
                 )
                 if realtime_crack_manager.is_actively_cracking(
@@ -60,14 +53,11 @@ class AttackAll(object):
                 continue  # Move to the next target in the list
 
             bssid = target.bssid
-            essid = (
-                target.essid if target.essid_known else "{O}ESSID unknown{W}"
-            )
+            essid = target.essid if target.essid_known else "{O}ESSID unknown{W}"
 
             Color.pl(
                 "\n{+} ({G}%d{W}/{G}%d{W})" % (index, len(targets))
-                + " Starting attacks against {C}%s{W} ({C}%s{W})"
-                % (bssid, essid)
+                + " Starting attacks against {C}%s{W} ({C}%s{W})" % (bssid, essid)
             )
 
             should_continue = cls.attack_single(
@@ -78,9 +68,7 @@ class AttackAll(object):
 
         # Final status update for any lingering sessions after all targets are processed
         if realtime_crack_manager:
-            Color.pl(
-                "{+} Performing final real-time cracker status update..."
-            )
+            Color.pl("{+} Performing final real-time cracker status update...")
             realtime_crack_manager.update_status()  # Check for any last-minute cracks
             if (
                 realtime_crack_manager.is_actively_cracking()
@@ -92,9 +80,7 @@ class AttackAll(object):
         return attacked_targets
 
     @classmethod
-    def attack_single(
-        cls, target, targets_remaining, realtime_crack_manager=None
-    ):
+    def attack_single(cls, target, targets_remaining, realtime_crack_manager=None):
         """
         Attacks a single `target` (wifite.model.target).
         Returns: True if attacks should continue, False otherwise.
@@ -128,9 +114,7 @@ class AttackAll(object):
                     if Configuration.wps_pin:
                         attacks.append(AttackWPS(target, pixie_dust=False))
 
-            if (
-                not Configuration.wps_only
-            ):  # Allow PMKID and Handshake if not wps_only
+            if not Configuration.wps_only:  # Allow PMKID and Handshake if not wps_only
                 # PMKID (Applicable to WPA/WPA2/WPA3)
                 # Pass realtime_crack_manager to AttackPMKID constructor
                 attacks.append(AttackPMKID(target, realtime_crack_manager))
@@ -169,9 +153,7 @@ class AttackAll(object):
                     # If a standard attack succeeded, stop any real-time cracking for this target
                     if (
                         realtime_crack_manager
-                        and realtime_crack_manager.is_actively_cracking(
-                            target.bssid
-                        )
+                        and realtime_crack_manager.is_actively_cracking(target.bssid)
                     ):
                         Color.pl(
                             f"{{G}}Stopping real-time cracking for {target.bssid} as {attack.__class__.__name__} succeeded.{W}"
@@ -185,9 +167,7 @@ class AttackAll(object):
                 continue
             except KeyboardInterrupt:
                 Color.pl("\n{!} {O}Interrupted{W}\n")
-                answer = cls.user_wants_to_continue(
-                    targets_remaining, len(attacks)
-                )
+                answer = cls.user_wants_to_continue(targets_remaining, len(attacks))
                 if answer is True:
                     continue  # Keep attacking the same target (continue)
                 elif answer is None:
@@ -212,13 +192,9 @@ class AttackAll(object):
 
         prompt_list = []
         if attacks_remaining > 0:
-            prompt_list.append(
-                Color.s("{C}%d{W} attack(s)" % attacks_remaining)
-            )
+            prompt_list.append(Color.s("{C}%d{W} attack(s)" % attacks_remaining))
         if targets_remaining > 0:
-            prompt_list.append(
-                Color.s("{C}%d{W} target(s)" % targets_remaining)
-            )
+            prompt_list.append(Color.s("{C}%d{W} target(s)" % targets_remaining))
         prompt = " and ".join(prompt_list) + " remain"
         Color.pl("{+} %s" % prompt)
 

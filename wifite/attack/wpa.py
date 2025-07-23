@@ -66,11 +66,7 @@ class AttackWPA(Attack):
         handshake.analyze()
 
         # If real-time cracking is enabled, try to start a session with the captured handshake.
-        if (
-            handshake
-            and self.realtime_crack_manager
-            and Configuration.hashcat_realtime
-        ):
+        if handshake and self.realtime_crack_manager and Configuration.hashcat_realtime:
             # Convert .cap to .hccapx for Hashcat using HcxPcapTool
             from ..tools.hashcat import (
                 HcxPcapTool,
@@ -139,8 +135,7 @@ class AttackWPA(Attack):
 
         Color.pl(
             "\n{+} {C}Cracking WPA Handshake:{W} Running {C}aircrack-ng{W} with"
-            + " {C}%s{W} wordlist"
-            % os.path.split(Configuration.wordlist)[-1]
+            + " {C}%s{W} wordlist" % os.path.split(Configuration.wordlist)[-1]
         )
 
         # Crack it
@@ -186,24 +181,16 @@ class AttackWPA(Attack):
             # Try to load existing handshake
             if Configuration.ignore_old_handshakes == False:
                 bssid = airodump_target.bssid
-                essid = (
-                    airodump_target.essid
-                    if airodump_target.essid_known
-                    else None
-                )
+                essid = airodump_target.essid if airodump_target.essid_known else None
                 handshake = self.load_handshake(bssid=bssid, essid=essid)
                 if handshake:
                     Color.pattack(
                         "WPA",
                         self.target,
                         "Handshake capture",
-                        "found {G}existing handshake{W} for {C}%s{W}"
-                        % handshake.essid,
+                        "found {G}existing handshake{W} for {C}%s{W}" % handshake.essid,
                     )
-                    Color.pl(
-                        "\n{+} Using handshake from {C}%s{W}"
-                        % handshake.capfile
-                    )
+                    Color.pl("\n{+} Using handshake from {C}%s{W}" % handshake.capfile)
                     return handshake
 
             timeout_timer = Timer(Configuration.wpa_attack_timeout)
@@ -234,11 +221,7 @@ class AttackWPA(Attack):
 
                 # Check cap file in temp for Handshake
                 bssid = airodump_target.bssid
-                essid = (
-                    airodump_target.essid
-                    if airodump_target.essid_known
-                    else None
-                )
+                essid = airodump_target.essid if airodump_target.essid_known else None
                 handshake = Handshake(temp_file, bssid=bssid, essid=essid)
                 if handshake.has_handshake():
                     # We got a handshake
@@ -266,8 +249,7 @@ class AttackWPA(Attack):
                             "WPA",
                             airodump_target,
                             "Handshake capture",
-                            "Discovered new client: {G}%s{W}"
-                            % client.station,
+                            "Discovered new client: {G}%s{W}" % client.station,
                         )
                         Color.pl("")
                         self.clients.append(client.station)
@@ -309,15 +291,9 @@ class AttackWPA(Attack):
         )
 
         for filename in os.listdir(Configuration.wpa_handshake_dir):
-            cap_filename = os.path.join(
-                Configuration.wpa_handshake_dir, filename
-            )
-            if os.path.isfile(cap_filename) and re.match(
-                get_filename, filename
-            ):
-                return Handshake(
-                    capfile=cap_filename, bssid=bssid, essid=essid
-                )
+            cap_filename = os.path.join(Configuration.wpa_handshake_dir, filename)
+            if os.path.isfile(cap_filename) and re.match(get_filename, filename):
+                return Handshake(capfile=cap_filename, bssid=bssid, essid=essid)
 
         return None
 
@@ -343,9 +319,7 @@ class AttackWPA(Attack):
             bssid_safe,
             date,
         )
-        cap_filename = os.path.join(
-            Configuration.wpa_handshake_dir, cap_filename
-        )
+        cap_filename = os.path.join(Configuration.wpa_handshake_dir, cap_filename)
 
         if Configuration.wpa_strip_handshake:
             Color.p(
@@ -355,10 +329,7 @@ class AttackWPA(Attack):
             handshake.strip(outfile=cap_filename)
             Color.pl("{G}saved{W}")
         else:
-            Color.p(
-                "{+} saving copy of {C}handshake{W} to {C}%s{W} "
-                % cap_filename
-            )
+            Color.p("{+} saving copy of {C}handshake{W} to {C}%s{W} " % cap_filename)
             copy(handshake.capfile, cap_filename)
             Color.pl("{G}saved{W}")
 

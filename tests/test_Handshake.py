@@ -50,9 +50,7 @@ class TestHandshake(unittest.TestCase):
         hs.divine_bssid_and_essid()
         assert len(hs.cowpatty_handshakes()) > 0
 
-    @unittest.skipUnless(
-        Process.exists("aircrack-ng"), "aircrack-ng is missing"
-    )
+    @unittest.skipUnless(Process.exists("aircrack-ng"), "aircrack-ng is missing")
     def testHandshakeAircrack(self):
         hs_file = self.getFile("handshake_exists.cap")
         hs = Handshake(hs_file, bssid="A4:2B:8C:16:6B:3A")

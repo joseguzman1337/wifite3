@@ -70,14 +70,10 @@ class Dependency(object):
             sys.exit(-1)
         except Exception as e:
             Color.pl("{!} {R}Auto-install failed: %s{W}" % str(e))
-            Color.pl(
-                "{!} {O}Continuing with manual dependency checking...{W}"
-            )
+            Color.pl("{!} {O}Continuing with manual dependency checking...{W}")
 
         # Re-check dependencies after auto-install
-        missing_required = any(
-            [app.fails_dependency_check() for app in apps]
-        )
+        missing_required = any([app.fails_dependency_check() for app in apps])
 
         if missing_required:
             Color.pl(
@@ -180,19 +176,12 @@ class Dependency(object):
 
             if app_name in special_installs:
                 # Handle special installations
-                Color.pl(
-                    "{+} {C}Installing {G}%s{C} (special)...{W}" % app_name
-                )
+                Color.pl("{+} {C}Installing {G}%s{C} (special)...{W}" % app_name)
                 try:
                     special_installs[app_name]()
-                    Color.pl(
-                        "{+} {G}Successfully installed %s{W}" % app_name
-                    )
+                    Color.pl("{+} {G}Successfully installed %s{W}" % app_name)
                 except Exception as e:
-                    Color.pl(
-                        "{!} {R}Failed to install %s: %s{W}"
-                        % (app_name, str(e))
-                    )
+                    Color.pl("{!} {R}Failed to install %s: %s{W}" % (app_name, str(e)))
 
             elif app_name in package_map:
                 packages_to_install.add(package_map[app_name])
@@ -203,10 +192,7 @@ class Dependency(object):
         # Install regular packages in batch
         if packages_to_install:
             package_list = list(packages_to_install)
-            Color.pl(
-                "{+} {C}Installing packages: {G}%s{W}"
-                % ", ".join(package_list)
-            )
+            Color.pl("{+} {C}Installing packages: {G}%s{W}" % ", ".join(package_list))
             try:
                 cmd = ["sudo", "apt", "install", "-y"] + package_list
                 subprocess.run(
@@ -215,9 +201,7 @@ class Dependency(object):
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.PIPE,
                 )
-                Color.pl(
-                    "{+} {G}Successfully installed standard packages{W}"
-                )
+                Color.pl("{+} {G}Successfully installed standard packages{W}")
             except subprocess.CalledProcessError as e:
                 Color.pl(
                     "{!} {R}Failed to install some packages: %s{W}"
@@ -246,9 +230,7 @@ echo "This is a compatibility pyrit for wifite ninja mode"
                 ["sudo", "mv", "/tmp/pyrit_dummy", "/usr/local/bin/pyrit"],
                 check=True,
             )
-            subprocess.run(
-                ["sudo", "chmod", "+x", "/usr/local/bin/pyrit"], check=True
-            )
+            subprocess.run(["sudo", "chmod", "+x", "/usr/local/bin/pyrit"], check=True)
         except Exception as e:
             raise Exception(f"Failed to create pyrit compatibility: {e}")
 
@@ -273,9 +255,7 @@ echo "This is a compatibility pyrit for wifite ninja mode"
             except Exception as e:
                 raise Exception(f"Failed to create hcxpcaptool link: {e}")
         else:
-            raise Exception(
-                "hcxpcapngtool not found, install hcxtools first"
-            )
+            raise Exception("hcxpcapngtool not found, install hcxtools first")
 
     @classmethod
     def _ensure_git_credential_manager(cls):
@@ -287,14 +267,10 @@ echo "This is a compatibility pyrit for wifite ninja mode"
         if Process.exists("git-credential-manager"):
             # Check if it's properly configured
             if cls._is_git_credential_manager_configured():
-                Color.pl(
-                    "{+} {G}Git Credential Manager already configured{W}"
-                )
+                Color.pl("{+} {G}Git Credential Manager already configured{W}")
                 return
             else:
-                Color.pl(
-                    "{+} {C}Git Credential Manager found, configuring...{W}"
-                )
+                Color.pl("{+} {C}Git Credential Manager found, configuring...{W}")
                 cls._configure_git_credential_manager()
                 return
 
@@ -305,14 +281,9 @@ echo "This is a compatibility pyrit for wifite ninja mode"
         try:
             cls._install_git_credential_manager()
             cls._configure_git_credential_manager()
-            Color.pl(
-                "{+} {G}Git Credential Manager installed and configured!{W}"
-            )
+            Color.pl("{+} {G}Git Credential Manager installed and configured!{W}")
         except Exception as e:
-            Color.pl(
-                "{!} {R}Failed to setup Git Credential Manager: %s{W}"
-                % str(e)
-            )
+            Color.pl("{!} {R}Failed to setup Git Credential Manager: %s{W}" % str(e))
             Color.pl(
                 "{!} {O}You may need to authenticate manually for git operations{W}"
             )
@@ -419,14 +390,10 @@ echo "This is a compatibility pyrit for wifite ninja mode"
             ]
 
             for key, value in configs:
-                subprocess.run(
-                    ["git", "config", "--global", key, value], check=True
-                )
+                subprocess.run(["git", "config", "--global", key, value], check=True)
 
         except Exception as e:
-            raise Exception(
-                f"Failed to configure Git Credential Manager: {e}"
-            )
+            raise Exception(f"Failed to configure Git Credential Manager: {e}")
 
     @classmethod
     def _is_git_credential_manager_configured(cls):

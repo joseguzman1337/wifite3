@@ -47,8 +47,6 @@ class CrackResultWPS(CrackResult):
 
 
 if __name__ == "__main__":
-    crw = CrackResultWPS(
-        "AA:BB:CC:DD:EE:FF", "Test Router", "01234567", "the psk"
-    )
+    crw = CrackResultWPS("AA:BB:CC:DD:EE:FF", "Test Router", "01234567", "the psk")
     crw.dump()
     crw.save()

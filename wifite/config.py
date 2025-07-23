@@ -24,11 +24,11 @@ class Configuration:
 
     version: ClassVar[str] = VERSION
 
-    initialized = False # Flag indicating config has been initialized
-    temp_dir = None     # Temporary directory
+    initialized = False  # Flag indicating config has been initialized
+    temp_dir = None  # Temporary directory
     interface = None
     verbose = 0
-    cracked_file = 'cracked.txt'
+    cracked_file = "cracked.txt"
 
     @classmethod
     def initialize(cls, load_interface=True):
@@ -57,20 +57,12 @@ class Configuration:
         cls.target_essid = None  # User-defined AP name
         cls.target_bssid = None  # User-defined AP BSSID
         cls.ignore_essid = None  # ESSIDs to ignore
-        cls.clients_only = (
-            False  # Only show targets that have associated clients
-        )
+        cls.clients_only = False  # Only show targets that have associated clients
         cls.five_ghz = False  # Scan 5Ghz channels
         cls.show_bssids = False  # Show BSSIDs in targets list
-        cls.random_mac = (
-            False  # Should generate a random Mac address at startup.
-        )
-        cls.no_deauth = (
-            False  # Deauth hidden networks & WPA handshake targets
-        )
-        cls.num_deauths = (
-            1  # Number of deauth packets to send to each target.
-        )
+        cls.random_mac = False  # Should generate a random Mac address at startup.
+        cls.no_deauth = False  # Deauth hidden networks & WPA handshake targets
+        cls.num_deauths = 1  # Number of deauth packets to send to each target.
 
         cls.encryption_filter = ["WEP", "WPA", "WPS"]
 
@@ -92,9 +84,7 @@ class Configuration:
         cls.wep_restart_aircrack = 30  # Seconds to give aircrack to crack
         # before restarting the process.
         cls.wep_crack_at_ivs = 10000  # Number of IVS to start cracking
-        cls.wep_keep_ivs = (
-            False  # Retain .ivs files across multiple attacks.
-        )
+        cls.wep_keep_ivs = False  # Retain .ivs files across multiple attacks.
 
         # WPA variables
         cls.wpa_filter = False  # Only attack WPA networks
@@ -127,9 +117,7 @@ class Configuration:
 
         # WPS variables
         cls.wps_filter = False  # Only attack WPS networks
-        cls.no_wps = (
-            False  # Do not use WPS attacks (Pixie-Dust & PIN attacks)
-        )
+        cls.no_wps = False  # Do not use WPS attacks (Pixie-Dust & PIN attacks)
         cls.wps_only = False  # ONLY use WPS attacks on non-WEP networks
         cls.use_bully = False  # Use bully instead of reaver
         cls.wps_pixie = True
@@ -242,21 +230,16 @@ class Configuration:
         if args.target_bssid:
             cls.target_bssid = args.target_bssid
             Color.pl(
-                "{+} {C}option:{W} targeting BSSID "
-                + "{G}%s{W}" % args.target_bssid
+                "{+} {C}option:{W} targeting BSSID " + "{G}%s{W}" % args.target_bssid
             )
 
         if args.five_ghz == True:
             cls.five_ghz = True
-            Color.pl(
-                "{+} {C}option:{W} including {G}5Ghz networks{W} in scans"
-            )
+            Color.pl("{+} {C}option:{W} including {G}5Ghz networks{W} in scans")
 
         if args.show_bssids == True:
             cls.show_bssids = True
-            Color.pl(
-                "{+} {C}option:{W} showing {G}bssids{W} of targets during scan"
-            )
+            Color.pl("{+} {C}option:{W} showing {G}bssids{W} of targets during scan")
 
         if args.no_deauth == True:
             cls.no_deauth = True
@@ -274,10 +257,7 @@ class Configuration:
 
         if args.target_essid:
             cls.target_essid = args.target_essid
-            Color.pl(
-                "{+} {C}option:{W} targeting ESSID {G}%s{W}"
-                % args.target_essid
-            )
+            Color.pl("{+} {C}option:{W} targeting ESSID {G}%s{W}" % args.target_essid)
 
         if args.ignore_essid is not None:
             cls.ignore_essid = args.ignore_essid
@@ -302,15 +282,11 @@ class Configuration:
 
         if args.verbose:
             cls.verbose = args.verbose
-            Color.pl(
-                "{+} {C}option:{W} verbosity level {G}%d{W}" % args.verbose
-            )
+            Color.pl("{+} {C}option:{W} verbosity level {G}%d{W}" % args.verbose)
 
         if args.kill_conflicting_processes:
             cls.kill_conflicting_processes = True
-            Color.pl(
-                "{+} {C}option:{W} kill conflicting processes {G}enabled{W}"
-            )
+            Color.pl("{+} {C}option:{W} kill conflicting processes {G}enabled{W}")
 
     @classmethod
     def parse_wep_args(cls, args):
@@ -350,8 +326,7 @@ class Configuration:
             cls.wep_restart_stale_ivs = args.wep_restart_stale_ivs
             Color.pl(
                 "{+} {C}option:{W} will restart aireplay after "
-                + "{G}%d seconds{W} of no new IVs"
-                % args.wep_restart_stale_ivs
+                + "{G}%d seconds{W} of no new IVs" % args.wep_restart_stale_ivs
             )
 
         if args.wep_restart_aircrack:
@@ -363,9 +338,7 @@ class Configuration:
 
         if args.wep_keep_ivs:
             cls.wep_keep_ivs = args.wep_keep_ivs
-            Color.pl(
-                "{+} {C}option:{W} keep .ivs files across multiple WEP attacks"
-            )
+            Color.pl("{+} {C}option:{W} keep .ivs files across multiple WEP attacks")
 
     @classmethod
     def parse_wpa_args(cls, args):
@@ -423,9 +396,7 @@ class Configuration:
 
         if args.wpa_strip_handshake:
             cls.wpa_strip_handshake = True
-            Color.pl(
-                "{+} {C}option:{W} will {G}strip{W} non-handshake packets"
-            )
+            Color.pl("{+} {C}option:{W} will {G}strip{W} non-handshake packets")
 
     @classmethod
     def parse_wps_args(cls, args):
@@ -473,9 +444,7 @@ class Configuration:
             from .tools.bully import Bully
 
             if not Bully.exists():
-                Color.pl(
-                    "{!} {R}Bully not found. Defaulting to {O}reaver{W}"
-                )
+                Color.pl("{!} {R}Bully not found. Defaulting to {O}reaver{W}")
                 cls.use_bully = False
             else:
                 cls.use_bully = args.use_bully
@@ -529,17 +498,13 @@ class Configuration:
         """Parses real-time Hashcat arguments"""
         if hasattr(args, "hashcat_realtime") and args.hashcat_realtime:
             cls.hashcat_realtime = True
-            Color.pl(
-                "{+} {C}option:{W} real-time {G}Hashcat cracking{W} enabled"
-            )
+            Color.pl("{+} {C}option:{W} real-time {G}Hashcat cracking{W} enabled")
 
         if (
             hasattr(args, "hashcat_realtime_wordlist_dir")
             and args.hashcat_realtime_wordlist_dir
         ):
-            cls.hashcat_realtime_wordlist_dir = (
-                args.hashcat_realtime_wordlist_dir
-            )
+            cls.hashcat_realtime_wordlist_dir = args.hashcat_realtime_wordlist_dir
             Color.pl(
                 "{+} {C}option:{W} Hashcat wordlist directory: {G}%s{W}"
                 % args.hashcat_realtime_wordlist_dir
@@ -549,18 +514,13 @@ class Configuration:
             hasattr(args, "hashcat_realtime_wordlist_file")
             and args.hashcat_realtime_wordlist_file
         ):
-            cls.hashcat_realtime_wordlist_file = (
-                args.hashcat_realtime_wordlist_file
-            )
+            cls.hashcat_realtime_wordlist_file = args.hashcat_realtime_wordlist_file
             Color.pl(
                 "{+} {C}option:{W} Hashcat wordlist file: {G}%s{W}"
                 % args.hashcat_realtime_wordlist_file
             )
 
-        if (
-            hasattr(args, "hashcat_realtime_options")
-            and args.hashcat_realtime_options
-        ):
+        if hasattr(args, "hashcat_realtime_options") and args.hashcat_realtime_options:
             cls.hashcat_realtime_options = args.hashcat_realtime_options
             Color.pl(
                 "{+} {C}option:{W} Hashcat custom options: {G}%s{W}"
@@ -578,9 +538,7 @@ class Configuration:
             hasattr(args, "hashcat_realtime_gpu_devices")
             and args.hashcat_realtime_gpu_devices
         ):
-            cls.hashcat_realtime_gpu_devices = (
-                args.hashcat_realtime_gpu_devices
-            )
+            cls.hashcat_realtime_gpu_devices = args.hashcat_realtime_gpu_devices
             Color.pl(
                 "{+} {C}option:{W} Hashcat GPU devices: {G}%s{W}"
                 % args.hashcat_realtime_gpu_devices
@@ -598,9 +556,7 @@ class Configuration:
             cls.encryption_filter.append("WPS")
 
         if len(cls.encryption_filter) == 3:
-            Color.pl(
-                "{+} {C}option:{W} targeting {G}all encrypted networks{W}"
-            )
+            Color.pl("{+} {C}option:{W} targeting {G}all encrypted networks{W}")
         elif len(cls.encryption_filter) == 0:
             # Default to scan all types
             cls.encryption_filter = ["WEP", "WPA", "WPS"]
@@ -724,9 +680,7 @@ class Configuration:
                 or val is None
             ):
                 continue
-            result += Color.s(
-                "{G}%s {W} {C}%s{W}\n" % (key.ljust(max_len), val)
-            )
+            result += Color.s("{G}%s {W} {C}%s{W}\n" % (key.ljust(max_len), val))
         return result
 
 

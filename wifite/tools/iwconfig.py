@@ -42,11 +42,7 @@ class Iwconfig(Dependency):
                 if mode is None:
                     interfaces.add(iface)
 
-            if (
-                mode is not None
-                and "Mode:{}".format(mode) in line
-                and len(iface) > 0
-            ):
+            if mode is not None and "Mode:{}".format(mode) in line and len(iface) > 0:
                 interfaces.add(iface)
 
         return list(interfaces)

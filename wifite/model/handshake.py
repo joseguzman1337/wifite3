@@ -43,9 +43,7 @@ class Handshake(object):
 
         if len(pairs) == 0 and not self.bssid and not self.essid:
             # Tshark and Pyrit failed us, nothing else we can do.
-            raise ValueError(
-                "Cannot find BSSID or ESSID in cap file %s" % self.capfile
-            )
+            raise ValueError("Cannot find BSSID or ESSID in cap file %s" % self.capfile)
 
         if not self.essid and not self.bssid:
             # We do not know the bssid nor the essid
@@ -92,9 +90,7 @@ class Handshake(object):
 
     def tshark_handshakes(self):
         """Returns list[tuple] of BSSID & ESSID pairs (ESSIDs are always `None`)."""
-        tshark_bssids = Tshark.bssids_with_handshakes(
-            self.capfile, bssid=self.bssid
-        )
+        tshark_bssids = Tshark.bssids_with_handshakes(self.capfile, bssid=self.bssid)
         return [(bssid, None) for bssid in tshark_bssids]
 
     def cowpatty_handshakes(self):
@@ -115,10 +111,7 @@ class Handshake(object):
 
         proc = Process(command, devnull=False)
         for line in proc.stdout().split("\n"):
-            if (
-                "Collected all necessary data to mount crack against WPA"
-                in line
-            ):
+            if "Collected all necessary data to mount crack against WPA" in line:
                 return [(None, self.essid)]
         return []
 
@@ -149,23 +142,15 @@ class Handshake(object):
         self.divine_bssid_and_essid()
 
         if Tshark.exists():
-            Handshake.print_pairs(
-                self.tshark_handshakes(), self.capfile, "tshark"
-            )
+            Handshake.print_pairs(self.tshark_handshakes(), self.capfile, "tshark")
 
         if Pyrit.exists():
-            Handshake.print_pairs(
-                self.pyrit_handshakes(), self.capfile, "pyrit"
-            )
+            Handshake.print_pairs(self.pyrit_handshakes(), self.capfile, "pyrit")
 
         if Process.exists("cowpatty"):
-            Handshake.print_pairs(
-                self.cowpatty_handshakes(), self.capfile, "cowpatty"
-            )
+            Handshake.print_pairs(self.cowpatty_handshakes(), self.capfile, "cowpatty")
 
-        Handshake.print_pairs(
-            self.aircrack_handshakes(), self.capfile, "aircrack"
-        )
+        Handshake.print_pairs(self.aircrack_handshakes(), self.capfile, "aircrack")
 
     def strip(self, outfile=None):
         # XXX: This method might break aircrack-ng, use at own risk.
@@ -217,10 +202,7 @@ class Handshake(object):
             return
 
         for bssid, essid in pairs:
-            out_str = (
-                "{+} %s.cap file {G}contains a valid handshake{W} for"
-                % tool_str
-            )
+            out_str = "{+} %s.cap file {G}contains a valid handshake{W} for" % tool_str
             if bssid and essid:
                 Color.pl("%s {G}%s{W} ({G}%s{W})" % (out_str, bssid, essid))
             elif bssid:
@@ -234,9 +216,7 @@ class Handshake(object):
         from ..config import Configuration
 
         if Configuration.check_handshake == "<all>":
-            Color.pl(
-                '{+} checking all handshakes in {G}"./hs"{W} directory\n'
-            )
+            Color.pl('{+} checking all handshakes in {G}"./hs"{W} directory\n')
             try:
                 capfiles = [
                     os.path.join("hs", x)
@@ -251,9 +231,7 @@ class Handshake(object):
             capfiles = [Configuration.check_handshake]
 
         for capfile in capfiles:
-            Color.pl(
-                "{+} checking for handshake in .cap file {C}%s{W}" % capfile
-            )
+            Color.pl("{+} checking for handshake in .cap file {C}%s{W}" % capfile)
             if not os.path.exists(capfile):
                 Color.pl("{!} {O}.cap file {C}%s{O} not found{W}" % capfile)
                 return
@@ -277,9 +255,7 @@ if __name__ == "__main__":
     print("has_hanshake() =", hs.has_handshake())
 
     print("\nWith BSSID, but no ESSID specified:")
-    hs = Handshake(
-        "./tests/files/handshake_has_1234.cap", bssid="18:d6:c7:6d:6b:18"
-    )
+    hs = Handshake("./tests/files/handshake_has_1234.cap", bssid="18:d6:c7:6d:6b:18")
     hs.analyze()
     print("has_hanshake() =", hs.has_handshake())
 

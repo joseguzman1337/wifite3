@@ -18,9 +18,7 @@ class TestTarget(unittest.TestCase):
         import os
         import inspect
 
-        this_file = os.path.abspath(
-            inspect.getsourcefile(TestTarget.getTargets)
-        )
+        this_file = os.path.abspath(inspect.getsourcefile(TestTarget.getTargets))
         this_dir = os.path.dirname(this_file)
         csv_file = os.path.join(this_dir, "files", filename)
         # Load targets from CSV file
@@ -84,9 +82,7 @@ class TestTarget(unittest.TestCase):
         ]
         target_mixed = Target(row_wpa2_wpa3)
         self.assertTrue(target_mixed.is_wpa3)
-        self.assertEqual(
-            target_mixed.encryption, "WPA3"
-        )  # WPA3 should be preferred
+        self.assertEqual(target_mixed.encryption, "WPA3")  # WPA3 should be preferred
 
     def test_owe_parsing(self):
         """Tests parsing of OWE networks"""

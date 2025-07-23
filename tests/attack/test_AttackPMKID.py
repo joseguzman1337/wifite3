@@ -20,9 +20,7 @@ class TestAttackPMKID(unittest.TestCase):
         Configuration.hashcat_realtime = (
             False  # Default to off unless specified in test
         )
-        Configuration.wordlist = (
-            None  # Avoid actual cracking attempts by default
-        )
+        Configuration.wordlist = None  # Avoid actual cracking attempts by default
         Configuration.ignore_old_handshakes = (
             True  # Focus on capture part for some tests
         )
@@ -39,12 +37,8 @@ class TestAttackPMKID(unittest.TestCase):
 
     @patch("wifite.tools.hashcat.HcxDumpTool")  # Mocks the entire class
     @patch("wifite.tools.hashcat.HcxPcapTool")  # Mocks the entire class
-    @patch(
-        "wifite.tools.hashcat.Hashcat.crack_pmkid"
-    )  # Mock the actual cracking call
-    @patch(
-        "os.path.exists", return_value=True
-    )  # Assume files exist generally
+    @patch("wifite.tools.hashcat.Hashcat.crack_pmkid")  # Mock the actual cracking call
+    @patch("os.path.exists", return_value=True)  # Assume files exist generally
     def test_run_starts_realtime_crack_if_enabled(
         self,
         mock_path_exists,
@@ -53,9 +47,7 @@ class TestAttackPMKID(unittest.TestCase):
         MockHcxDumpTool,
     ):
         Configuration.hashcat_realtime = True
-        Configuration.wordlist = (
-            None  # Don't proceed to local cracking for this test
-        )
+        Configuration.wordlist = None  # Don't proceed to local cracking for this test
 
         # Mock target
         mock_target_fields = [
@@ -80,12 +72,8 @@ class TestAttackPMKID(unittest.TestCase):
         # Mock HcxPcapTool instance and its get_pmkid_hash method
         mock_pcaptool_instance = MockHcxPcapTool.return_value
         # Simulate a captured PMKID hash string being returned and then saved to a file
-        test_pmkid_hash_string = (
-            "testpmkid*pmkidbssid*pmkidstation*pmkidessid"
-        )
-        mock_pcaptool_instance.get_pmkid_hash.return_value = (
-            test_pmkid_hash_string
-        )
+        test_pmkid_hash_string = "testpmkid*pmkidbssid*pmkidstation*pmkidessid"
+        mock_pcaptool_instance.get_pmkid_hash.return_value = test_pmkid_hash_string
 
         # Mock HcxDumpTool instance
         mock_dumptool_instance = MockHcxDumpTool.return_value

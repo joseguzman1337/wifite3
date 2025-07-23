@@ -44,8 +44,6 @@ class CrackResultWEP(CrackResult):
 
 
 if __name__ == "__main__":
-    crw = CrackResultWEP(
-        "AA:BB:CC:DD:EE:FF", "Test Router", "00:01:02:03:04", "abcde"
-    )
+    crw = CrackResultWEP("AA:BB:CC:DD:EE:FF", "Test Router", "00:01:02:03:04", "abcde")
     crw.dump()
     crw.save()

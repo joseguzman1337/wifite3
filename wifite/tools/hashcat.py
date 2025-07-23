@@ -34,9 +34,7 @@ class RealtimeHashcatSession:
         self.wordlist_path = wordlist_path
         self.outfile_path = outfile_path
         self.potfile_path = potfile_path
-        self.user_hashcat_options = (
-            user_hashcat_options if user_hashcat_options else []
-        )
+        self.user_hashcat_options = user_hashcat_options if user_hashcat_options else []
 
 
 class Hashcat(Dependency):
@@ -190,8 +188,7 @@ class HcxPcapTool(Dependency):
         stdout, stderr = process.get_output()
         if not os.path.exists(hccapx_file):
             raise ValueError(
-                "Failed to generate .hccapx file, output: \n%s\n%s"
-                % (stdout, stderr)
+                "Failed to generate .hccapx file, output: \n%s\n%s" % (stdout, stderr)
             )
 
         return hccapx_file
@@ -211,8 +208,7 @@ class HcxPcapTool(Dependency):
         stdout, stderr = process.get_output()
         if not os.path.exists(john_file):
             raise ValueError(
-                "Failed to generate .john file, output: \n%s\n%s"
-                % (stdout, stderr)
+                "Failed to generate .john file, output: \n%s\n%s" % (stdout, stderr)
             )
 
         return john_file
@@ -285,9 +281,7 @@ class HcxPcapTool(Dependency):
         temp_dir = Configuration.temp()
         # Ensure BSSID is filesystem-safe for session name and temp files
         safe_bssid = target_bssid.replace(":", "").lower()
-        session_name = (
-            f'wifite_realtime_{safe_bssid}_{time.strftime("%Y%m%d%H%M%S")}'
-        )
+        session_name = f'wifite_realtime_{safe_bssid}_{time.strftime("%Y%m%d%H%M%S")}'
 
         temp_outfile_path = os.path.join(temp_dir, f"{session_name}.out")
         temp_potfile_path = os.path.join(temp_dir, f"{session_name}.pot")
@@ -313,10 +307,7 @@ class HcxPcapTool(Dependency):
             hashcat_cmd.extend(user_hashcat_options)
 
         if user_preferences:
-            if (
-                user_preferences.get("force", False)
-                or Hashcat.should_use_force()
-            ):
+            if user_preferences.get("force", False) or Hashcat.should_use_force():
                 hashcat_cmd.append("--force")
             if "opencl_device_types" in user_preferences:
                 hashcat_cmd.extend(
@@ -334,10 +325,7 @@ class HcxPcapTool(Dependency):
                 % (session_name, target_bssid)
             )
             if Configuration.verbose > 1:
-                Color.pl(
-                    "{+} {D}Hashcat command: {W}{P}%s{W}"
-                    % " ".join(hashcat_cmd)
-                )
+                Color.pl("{+} {D}Hashcat command: {W}{P}%s{W}" % " ".join(hashcat_cmd))
 
             popen_object = subprocess.Popen(
                 hashcat_cmd,
@@ -455,19 +443,13 @@ class HcxPcapTool(Dependency):
         }
 
     @staticmethod
-    def stop_realtime_crack(
-        session: RealtimeHashcatSession, cleanup_hash_file=False
-    ):
+    def stop_realtime_crack(session: RealtimeHashcatSession, cleanup_hash_file=False):
         """Stops the Hashcat process and cleans up temporary files."""
         if session and session.popen_object:
-            if (
-                session.popen_object.poll() is None
-            ):  # Process is still running
+            if session.popen_object.poll() is None:  # Process is still running
                 try:
                     # Send SIGTERM to the entire process group
-                    os.killpg(
-                        os.getpgid(session.popen_object.pid), signal.SIGTERM
-                    )
+                    os.killpg(os.getpgid(session.popen_object.pid), signal.SIGTERM)
                     Color.pl(
                         "{+} {O}Sent SIGTERM to Hashcat session for {C}%s{W}"
                         % session.target_bssid
@@ -493,15 +475,12 @@ class HcxPcapTool(Dependency):
                         session.popen_object.wait(timeout=1)  # Wait for kill
                     except Exception as e:
                         Color.pl(
-                            "{!} {R}Error sending SIGKILL to Hashcat: {O}%s{W}"
-                            % str(e)
+                            "{!} {R}Error sending SIGKILL to Hashcat: {O}%s{W}" % str(e)
                         )
                 except (
                     Exception
                 ) as e:  # Catch other errors like process already terminated
-                    Color.pl(
-                        "{!} {R}Error terminating Hashcat: {O}%s{W}" % str(e)
-                    )
+                    Color.pl("{!} {R}Error terminating Hashcat: {O}%s{W}" % str(e))
 
             # Close pipes
             if session.popen_object.stdout:
@@ -537,9 +516,7 @@ class HcxPcapTool(Dependency):
             # Be cautious not to delete user-provided hash files. This logic might need refinement
             # based on how hash_file_path is managed (e.g. if it's always copied to temp).
             # For now, assuming if cleanup_hash_file is True, it's safe.
-            if Configuration.temp() in os.path.abspath(
-                session.hash_file_path
-            ):
+            if Configuration.temp() in os.path.abspath(session.hash_file_path):
                 try:
                     os.remove(session.hash_file_path)
                 except Exception as e:

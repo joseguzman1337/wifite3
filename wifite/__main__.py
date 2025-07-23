@@ -71,13 +71,10 @@ class Wifite:
     def print_banner(self):
         """Displays ASCII art of the highest caliber - NINJA MODE"""
         Color.pl(
-            r"        {R}🥷{W}  wifite {G}v%s{W} - ninja mode"
-            % Configuration.version
+            r"        {R}🥷{W}  wifite {G}v%s{W} - ninja mode" % Configuration.version
         )
         Color.pl(r"       {B}/|\{W}  automated wireless auditor")
-        Color.pl(
-            r"       {B}/ \{W}  {C}github.com/joseguzman1337/wifite3{W}"
-        )
+        Color.pl(r"       {B}/ \{W}  {C}github.com/joseguzman1337/wifite3{W}")
         Color.pl("")
 
     def scan_and_attack(self):
@@ -101,8 +98,7 @@ class Wifite:
         )
 
         Color.pl(
-            "{+} Finished attacking {C}%d{W} target(s), exiting"
-            % attacked_targets
+            "{+} Finished attacking {C}%d{W} target(s), exiting" % attacked_targets
         )
 
 
@@ -130,9 +126,7 @@ def entry_point() -> None:
             and hasattr(wifite, "realtime_crack_manager")
             and wifite.realtime_crack_manager
         ):
-            Color.pl(
-                "{!} {O}Stopping any active real-time cracking sessions...{W}"
-            )
+            Color.pl("{!} {O}Stopping any active real-time cracking sessions...{W}")
             wifite.realtime_crack_manager.stop_current_crack_attempt(
                 cleanup_hash_file=True
             )

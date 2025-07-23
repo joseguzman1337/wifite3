@@ -64,9 +64,7 @@ class Aireplay(Thread, Dependency):
     dependency_name = "aireplay-ng"
     dependency_url = "https://www.aircrack-ng.org/install.html"
 
-    def __init__(
-        self, target, attack_type, client_mac=None, replay_file=None
-    ):
+    def __init__(self, target, attack_type, client_mac=None, replay_file=None):
         """
         Starts aireplay process.
         Args:
@@ -77,9 +75,7 @@ class Aireplay(Thread, Dependency):
         super(Aireplay, self).__init__()  # Init the parent Thread
 
         self.target = target
-        self.output_file = Configuration.temp(
-            "aireplay_%s.output" % attack_type
-        )
+        self.output_file = Configuration.temp("aireplay_%s.output" % attack_type)
         self.attack_type = WEPAttackType(attack_type).value
         self.error = None
         self.status = None
@@ -160,20 +156,17 @@ class Aireplay(Thread, Dependency):
                     read_re = re.compile(r"Read (\d+) packets")
                     matches = read_re.match(line)
                     if matches:
-                        self.status = (
-                            "Waiting for packet (read %s)..."
-                            % matches.group(1)
+                        self.status = "Waiting for packet (read %s)..." % matches.group(
+                            1
                         )
 
                     # Sent 1912 packets, current guess: 70...
-                    sent_re = re.compile(
-                        r"Sent (\d+) packets, current guess: (\w+)..."
-                    )
+                    sent_re = re.compile(r"Sent (\d+) packets, current guess: (\w+)...")
                     matches = sent_re.match(line)
                     if matches:
-                        self.status = (
-                            "Generating .xor (%s)... current guess: %s"
-                            % (self.xor_percent, matches.group(2))
+                        self.status = "Generating .xor (%s)... current guess: %s" % (
+                            self.xor_percent,
+                            matches.group(2),
                         )
 
                     # (DURING) Offset   52 (54% done) | xor = DE | pt = E0 |  152 frames written in  2782ms
@@ -181,9 +174,7 @@ class Aireplay(Thread, Dependency):
                     matches = offset_re.match(line)
                     if matches:
                         self.xor_percent = matches.group(1)
-                        self.status = (
-                            "Generating .xor (%s)..." % self.xor_percent
-                        )
+                        self.status = "Generating .xor (%s)..." % self.xor_percent
 
                     # (DONE)   Saving keystream in replay_dec-0516-202246.xor
                     saving_re = re.compile(r"Saving keystream in (.*\.xor)")
@@ -192,11 +183,10 @@ class Aireplay(Thread, Dependency):
                         self.status = matches.group(1)
 
                     # (ERROR) fakeauth required
-                    if (
-                        "try running aireplay-ng in authenticated mode"
-                        in line
-                    ):
-                        self.status = "fakeauth is required and you are not authenticated"
+                    if "try running aireplay-ng in authenticated mode" in line:
+                        self.status = (
+                            "fakeauth is required and you are not authenticated"
+                        )
 
                 elif self.attack_type == WEPAttackType.fragment:
                     # Parse fragment output, update self.status
@@ -205,9 +195,8 @@ class Aireplay(Thread, Dependency):
                     read_re = re.compile(r"Read (\d+) packets")
                     matches = read_re.match(line)
                     if matches:
-                        self.status = (
-                            "Waiting for packet (read %s)..."
-                            % matches.group(1)
+                        self.status = "Waiting for packet (read %s)..." % matches.group(
+                            1
                         )
 
                     # 01:08:15  Waiting for a data packet...
@@ -215,14 +204,11 @@ class Aireplay(Thread, Dependency):
                         self.status = "waiting for packet"
 
                     # Read 207 packets...
-                    trying_re = re.compile(
-                        r"Trying to get (\d+) bytes of a keystream"
-                    )
+                    trying_re = re.compile(r"Trying to get (\d+) bytes of a keystream")
                     matches = trying_re.match(line)
                     if matches:
                         self.status = (
-                            "trying to get %sb of a keystream"
-                            % matches.group(1)
+                            "trying to get %sb of a keystream" % matches.group(1)
                         )
 
                     # 01:08:17  Sending fragmented packet
@@ -234,14 +220,11 @@ class Aireplay(Thread, Dependency):
                         self.status = "sending another packet"
 
                     # XX:XX:XX  Trying to get 1500 bytes of a keystream
-                    trying_re = re.compile(
-                        r"Trying to get (\d+) bytes of a keystream"
-                    )
+                    trying_re = re.compile(r"Trying to get (\d+) bytes of a keystream")
                     matches = trying_re.match(line)
                     if matches:
                         self.status = (
-                            "trying to get %sb of a keystream"
-                            % matches.group(1)
+                            "trying to get %sb of a keystream" % matches.group(1)
                         )
 
                     # XX:XX:XX  Got RELAYED packet!!
@@ -256,9 +239,7 @@ class Aireplay(Thread, Dependency):
                     saving_re = re.compile(r"Saving keystream in (.*\.xor)")
                     matches = saving_re.match(line)
                     if matches:
-                        self.status = (
-                            "saving keystream to %s" % matches.group(1)
-                        )
+                        self.status = "saving keystream to %s" % matches.group(1)
 
                     # XX:XX:XX  Now you can build a packet with packetforge-ng out of that 1500 bytes keystream
 
@@ -282,9 +263,7 @@ class Aireplay(Thread, Dependency):
         self.stop()
 
     @staticmethod
-    def get_aireplay_command(
-        target, attack_type, client_mac=None, replay_file=None
-    ):
+    def get_aireplay_command(target, attack_type, client_mac=None, replay_file=None):
         """
         Generates aireplay command based on target and attack type
         Args:
