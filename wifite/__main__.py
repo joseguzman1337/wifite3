@@ -60,12 +60,10 @@ class Wifite(object):
 
 
     def print_banner(self):
-        '''Displays ASCII art of the highest caliber.'''
-        Color.pl(r' {G}  .     {GR}{D}     {W}{G}     .    {W}')
-        Color.pl(r' {G}.´  ·  .{GR}{D}     {W}{G}.  ·  `.  {G}wifite {D}%s{W}' % Configuration.version)
-        Color.pl(r' {G}:  :  : {GR}{D} (¯) {W}{G} :  :  :  {W}{D}automated wireless auditor{W}')
-        Color.pl(r' {G}`.  ·  `{GR}{D} /¯\ {W}{G}´  ·  .´  {C}{D}https://github.com/derv82/wifite2{W}')
-        Color.pl(r' {G}  `     {GR}{D}/¯¯¯\{W}{G}     ´    {W}')
+        '''Displays ASCII art of the highest caliber - NINJA MODE'''
+        Color.pl(r'        {R}🥷{W}  wifite {G}v%s{W} - ninja mode' % Configuration.version)
+        Color.pl(r'       {B}/|\{W}  automated wireless auditor')
+        Color.pl(r'       {B}/ \{W}  {C}github.com/joseguzman1337/wifite3{W}')
         Color.pl('')
 
 

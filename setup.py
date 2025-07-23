@@ -5,9 +5,9 @@ from wifite.config import Configuration
 setup(
     name='wifite',
     version=Configuration.version,
-    author='derv82',
-    author_email='derv82@gmail.com',
-    url='https://github.com/derv82/wifite2',
+    author='joseguzman1337',
+    author_email='',
+    url='https://github.com/joseguzman1337/wifite3',
     packages=[
         'wifite',
         'wifite/attack',

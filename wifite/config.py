@@ -8,7 +8,7 @@ from .tools.macchanger import Macchanger
 
 class Configuration(object):
     ''' Stores configuration variables and functions for Wifite. '''
-    version = '2.2.5'
+    version = '3.0.0'
 
     initialized = False # Flag indicating config has been initialized
     temp_dir = None     # Temporary directory
@@ -112,6 +112,14 @@ class Configuration(object):
         cls.wps_fail_threshold = 100     # Max number of failures
         cls.wps_timeout_threshold = 100  # Max number of timeouts
 
+        # Real-time Hashcat variables
+        cls.hashcat_realtime = False  # Enable real-time Hashcat cracking
+        cls.hashcat_realtime_wordlist_dir = '/usr/share/wordlists/'  # Directory for wordlists
+        cls.hashcat_realtime_wordlist_file = None  # Specific wordlist file
+        cls.hashcat_realtime_options = None  # Custom Hashcat options
+        cls.hashcat_realtime_force_cpu = False  # Force CPU usage
+        cls.hashcat_realtime_gpu_devices = None  # GPU device IDs
+
         # Commands
         cls.show_cracked = False
         cls.check_handshake = None
@@ -144,6 +152,7 @@ class Configuration(object):
         cls.parse_wpa_args(args)
         cls.parse_wps_args(args)
         cls.parse_pmkid_args(args)
+        cls.parse_hashcat_realtime_args(args)
         cls.parse_encryption()
 
         # EvilTwin
@@ -392,6 +401,33 @@ class Configuration(object):
         if args.pmkid_timeout:
             cls.pmkid_timeout = args.pmkid_timeout
             Color.pl('{+} {C}option:{W} will wait {G}%d seconds{W} during {C}PMKID{W} capture' % args.pmkid_timeout)
+
+    @classmethod
+    def parse_hashcat_realtime_args(cls, args):
+        '''Parses real-time Hashcat arguments'''
+        if hasattr(args, 'hashcat_realtime') and args.hashcat_realtime:
+            cls.hashcat_realtime = True
+            Color.pl('{+} {C}option:{W} real-time {G}Hashcat cracking{W} enabled')
+
+        if hasattr(args, 'hashcat_realtime_wordlist_dir') and args.hashcat_realtime_wordlist_dir:
+            cls.hashcat_realtime_wordlist_dir = args.hashcat_realtime_wordlist_dir
+            Color.pl('{+} {C}option:{W} Hashcat wordlist directory: {G}%s{W}' % args.hashcat_realtime_wordlist_dir)
+
+        if hasattr(args, 'hashcat_realtime_wordlist_file') and args.hashcat_realtime_wordlist_file:
+            cls.hashcat_realtime_wordlist_file = args.hashcat_realtime_wordlist_file
+            Color.pl('{+} {C}option:{W} Hashcat wordlist file: {G}%s{W}' % args.hashcat_realtime_wordlist_file)
+
+        if hasattr(args, 'hashcat_realtime_options') and args.hashcat_realtime_options:
+            cls.hashcat_realtime_options = args.hashcat_realtime_options
+            Color.pl('{+} {C}option:{W} Hashcat custom options: {G}%s{W}' % args.hashcat_realtime_options)
+
+        if hasattr(args, 'hashcat_realtime_force_cpu') and args.hashcat_realtime_force_cpu:
+            cls.hashcat_realtime_force_cpu = True
+            Color.pl('{+} {C}option:{W} Hashcat {G}CPU-only{W} mode enabled')
+
+        if hasattr(args, 'hashcat_realtime_gpu_devices') and args.hashcat_realtime_gpu_devices:
+            cls.hashcat_realtime_gpu_devices = args.hashcat_realtime_gpu_devices
+            Color.pl('{+} {C}option:{W} Hashcat GPU devices: {G}%s{W}' % args.hashcat_realtime_gpu_devices)
 
     @classmethod
     def parse_encryption(cls):
