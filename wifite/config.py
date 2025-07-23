@@ -1,14 +1,27 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3.13
+"""Configuration module for Wifite3 - Python 3.13.5 Edition."""
 
 import os
+import sys
+from typing import Optional, List, ClassVar, Any
 
 from .util.color import Color
 from .tools.macchanger import Macchanger
 
-class Configuration(object):
-    ''' Stores configuration variables and functions for Wifite. '''
-    version = '3.0.0'
+PYTHON_VERSION: tuple[int, int, int] = (3, 13, 5)
+VERSION: str = '3.13.5'
+APP_NAME: str = 'Wifite3'
+DEFAULT_TIMEOUT: int = 300
+DEFAULT_WEP_TIMEOUT: int = 600
+DEFAULT_WPA_TIMEOUT: int = 500
+DEFAULT_WPS_TIMEOUT: int = 300
+DEFAULT_PMKID_TIMEOUT: int = 30
+DEFAULT_PPS: int = 600
+DEFAULT_IVS: int = 10000
+
+class Configuration:
+    """Stores configuration variables and functions for Wifite3."""
+    version: ClassVar[str] = VERSION
 
     initialized = False # Flag indicating config has been initialized
     temp_dir = None     # Temporary directory

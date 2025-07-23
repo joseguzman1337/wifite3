@@ -1,18 +1,24 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3.13
+"""Main module for Wifite3 - Python 3.13.5 Edition."""
+
+import os
+import sys
+from typing import Optional, Any
 
 try:
     from .config import Configuration
 except (ValueError, ImportError) as e:
-    raise Exception('You may need to run wifite from the root directory (which includes README.md)', e)
+    raise Exception('You may need to run wifite from the root directory (which includes README.md)', e) from e
 
 from .util.color import Color
 
-import os
-import sys
+ROOT_UID: int = 0
+EXIT_SUCCESS: int = 0
+APP_NAME: str = 'Wifite3'
+VERSION_BANNER: str = 'v3.13.5'
+GITHUB_URL: str = 'github.com/joseguzman1337/wifite3'
 
-
-class Wifite(object):
+class Wifite:
 
     def __init__(self):
         '''
@@ -91,30 +97,36 @@ class Wifite(object):
 ##############################################################
 
 
-def entry_point():
+def main() -> None:
+    """Main entry point for Wifite3."""
+    entry_point()
+
+def entry_point() -> None:
+    """Legacy entry point function."""
+    wifite: Optional[Wifite] = None
     try:
         wifite = Wifite()
         wifite.start()
     except Exception as e:
         Color.pexception(e)
         Color.pl('\n{!} {R}Exiting{W}\n')
-
     except KeyboardInterrupt:
         Color.pl('\n{!} {O}Interrupted, Shutting down...{W}')
-        # Ensure wifite object exists for cleanup if initialization was partial
-        if 'wifite' in locals() and hasattr(wifite, 'realtime_crack_manager') and wifite.realtime_crack_manager:
+        if (wifite and hasattr(wifite, 'realtime_crack_manager') 
+            and wifite.realtime_crack_manager):
             Color.pl('{!} {O}Stopping any active real-time cracking sessions...{W}')
-            wifite.realtime_crack_manager.stop_current_crack_attempt(cleanup_hash_file=True)
-
-
-    # Final cleanup call, also handles non-interrupt exits
-    if 'wifite' in locals() and hasattr(wifite, 'realtime_crack_manager') and wifite.realtime_crack_manager:
-        if wifite.realtime_crack_manager.is_actively_cracking(): # Check if it's still active before printing stop message again
-             Color.pl('{!} {O}Ensuring real-time cracking sessions are stopped before exit...{W}')
-             wifite.realtime_crack_manager.stop_current_crack_attempt(cleanup_hash_file=True)
-
-    Configuration.exit_gracefully(0)
-
+            wifite.realtime_crack_manager.stop_current_crack_attempt(
+                cleanup_hash_file=True
+            )
+    finally:
+        if (wifite and hasattr(wifite, 'realtime_crack_manager') 
+            and wifite.realtime_crack_manager 
+            and wifite.realtime_crack_manager.is_actively_cracking()):
+            Color.pl('{!} {O}Ensuring real-time cracking sessions are stopped before exit...{W}')
+            wifite.realtime_crack_manager.stop_current_crack_attempt(
+                cleanup_hash_file=True
+            )
+        Configuration.exit_gracefully(EXIT_SUCCESS)
 
 if __name__ == '__main__':
-    entry_point()
+    main()

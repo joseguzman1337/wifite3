@@ -1,0 +1,57 @@
+FROM python:3.13-slim-bookworm
+
+LABEL maintainer="joseguzman1337"
+LABEL version="3.13.5"
+LABEL description="Wifite3 - Wireless Network Auditor for Linux - Python 3.13.5 Edition"
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONHASHSEED=random
+ENV PYTHONPATH=/app
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    aircrack-ng \
+    tshark \
+    reaver \
+    pixiewps \
+    bully \
+    cowpatty \
+    hashcat \
+    john \
+    macchanger \
+    wireless-tools \
+    net-tools \
+    iproute2 \
+    iw \
+    procps \
+    git \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN pip install --no-cache-dir -e .
+
+RUN adduser --disabled-password --gecos '' --uid 1000 wifite && \
+    chown -R wifite:wifite /app
+
+EXPOSE 80 443
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python3.13 -c "import wifite; print('OK')" || exit 1
+
+USER root
+
+ENTRYPOINT ["python3.13", "-m", "wifite"]
+CMD ["--help"]

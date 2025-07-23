@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .tools.hashcat import Hashcat, RealtimeHashcatSession # Assuming RealtimeHashcatSession is in hashcat.py
-from .util.color import Color
-from .config import Configuration # Assuming Configuration is accessible like this
-from .model.wpa_result import CrackResultWPA # For saving cracked results
+"""Real-time crack manager for Wifite3.
+
+This module provides real-time password cracking capabilities using Hashcat
+for WPA/WPA2 and PMKID attacks. It manages wordlist queues, crack sessions,
+and provides status updates for ongoing attacks.
+"""
 
 import os
-import time
+
+from .config import Configuration
+from .model.wpa_result import CrackResultWPA
+from .tools.hashcat import Hashcat, RealtimeHashcatSession
+from .util.color import Color
+
+# Color shortcuts for consistent usage
+W = ""  # White/reset color
 
 class RealtimeCrackManager:
     def __init__(self, config):
@@ -197,5 +206,3 @@ class RealtimeCrackManager:
         if bssid is None:
             return self.active_session is not None
         return self.active_session is not None and self.current_target_bssid == bssid
-
-```
