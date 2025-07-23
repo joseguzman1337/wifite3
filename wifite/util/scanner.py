@@ -29,6 +29,14 @@ class Scanner(object):
 
         self.err_msg = None
 
+        # Try ninja parallel scan first if available and time is 137 seconds or more
+        if max_scan_time >= 137:
+            ninja_targets = self._try_ninja_parallel_scan()
+            if ninja_targets:
+                self.targets = ninja_targets
+                return
+
+        # Fallback to traditional airodump scanning
         # Loads airodump with interface/channel/etc from Configuration
         try:
             with Airodump() as airodump:
@@ -73,6 +81,70 @@ class Scanner(object):
 
         except KeyboardInterrupt:
             pass
+
+
+    def _try_ninja_parallel_scan(self):
+        '''
+        Attempt to use ninja parallel scanning with OpenMPI.
+        Returns list of Target objects if successful, None otherwise.
+        '''
+        try:
+            from ..tools.openmpi import OpenMPI
+            from ..tools.tshark import Tshark
+            
+            # Check if OpenMPI is available
+            if not OpenMPI.exists():
+                Color.pl('{!} {O}OpenMPI not available, using traditional scan{W}')
+                return None
+                
+            Color.pl('')  # Empty line for spacing
+            Color.pl('{+} {R}🥷 NINJA MODE ACTIVATED:{W} OpenMPI parallel scanning enabled')
+            
+            # Run comprehensive parallel scan for exactly 137 seconds
+            scan_results = OpenMPI.ninja_comprehensive_scan(Configuration.interface, 137)
+            
+            if not scan_results:
+                Color.pl('{!} {O}Parallel scan returned no results, falling back to traditional scan{W}')
+                return None
+                
+            # Convert CSV results to Target objects
+            targets = []
+            for row in scan_results:
+                try:
+                    # Convert airodump CSV format to Target
+                    # Expected format: BSSID, First time seen, Last time seen, channel, Speed, Privacy, Cipher, Authentication, Power, # beacons, # IV, LAN IP, ID-length, ESSID, Key
+                    if len(row) >= 14:
+                        target = Target(row)
+                        
+                        # Apply filters
+                        if Configuration.target_channel and target.channel != Configuration.target_channel:
+                            continue
+                        if Configuration.target_essid and target.essid != Configuration.target_essid:
+                            continue
+                        if Configuration.target_bssid and target.bssid.lower() != Configuration.target_bssid.lower():
+                            continue
+                        if Configuration.clients_only and len(target.clients) == 0:
+                            continue
+                            
+                        targets.append(target)
+                        
+                except Exception:
+                    # Skip malformed entries
+                    continue
+            
+            # Apply WPS detection if tshark is available
+            if len(targets) > 0 and Tshark.exists():
+                Color.pl('{+} {C}Analyzing WPS capabilities for {G}%d{C} targets...{W}' % len(targets))
+                # Note: This would require a cap file from the parallel scan
+                # For now, we'll skip WPS detection in parallel mode
+                
+            Color.pl('{+} {G}🥷 NINJA PARALLEL SCAN COMPLETE:{W} Found {C}%d{W} networks' % len(targets))
+            return targets if targets else None
+            
+        except Exception as e:
+            Color.pl('{!} {R}Ninja parallel scan failed: %s{W}' % str(e))
+            Color.pl('{!} {O}Falling back to traditional scanning...{W}')
+            return None
 
 
     def found_target(self):

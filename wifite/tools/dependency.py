@@ -117,7 +117,8 @@ class Dependency(object):
             'macchanger': 'macchanger',
             'hashcat': 'hashcat',
             'hcxdumptool': 'hcxtools',
-            'hcxpcaptool': 'hcxtools'
+            'hcxpcaptool': 'hcxtools',
+            'mpirun': 'openmpi-bin'
         }
 
         # Special installations that need custom handling
