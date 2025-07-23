@@ -64,7 +64,9 @@ class CrackHelper:
         missing_tools = []
         for tool, dependencies in available_tools.items():
             missing = [
-                dep for dep in dependencies if not Process.exists(dep.dependency_name)
+                dep
+                for dep in dependencies
+                if not Process.exists(dep.dependency_name)
             ]
             if len(missing) > 0:
                 available_tools.pop(tool)
@@ -187,7 +189,8 @@ class CrackHelper:
             )
         if skipped_cracked_files > 0:
             Color.pl(
-                "{!} {O}Skipping %d already cracked files.{W}\n" % skipped_cracked_files
+                "{!} {O}Skipping %d already cracked files.{W}\n"
+                % skipped_cracked_files
             )
 
         # Sort by Date (Descending)
@@ -197,7 +200,8 @@ class CrackHelper:
     def print_handshakes(cls, handshakes):
         # Header
         max_essid_len = max(
-            [len(hs["essid"]) for hs in handshakes] + [len("ESSID (truncated)")]
+            [len(hs["essid"]) for hs in handshakes]
+            + [len("ESSID (truncated)")]
         )
         Color.p("{W}{D}  NUM")
         Color.p("  " + "ESSID (truncated)".ljust(max_essid_len))
@@ -255,7 +259,8 @@ class CrackHelper:
             crack_result = cls.crack_4way(hs, tool)
         else:
             raise ValueError(
-                "Cannot crack handshake: Type is not PMKID or 4-WAY. Handshake=%s" % hs
+                "Cannot crack handshake: Type is not PMKID or 4-WAY. Handshake=%s"
+                % hs
             )
 
         if crack_result is None:
@@ -275,7 +280,9 @@ class CrackHelper:
     @classmethod
     def crack_4way(cls, hs, tool):
 
-        handshake = Handshake(hs["filename"], bssid=hs["bssid"], essid=hs["essid"])
+        handshake = Handshake(
+            hs["filename"], bssid=hs["bssid"], essid=hs["essid"]
+        )
         try:
             handshake.divine_bssid_and_essid()
         except ValueError as e:
@@ -292,7 +299,9 @@ class CrackHelper:
             key = Cowpatty.crack_handshake(handshake, show_command=True)
 
         if key is not None:
-            return CrackResultWPA(hs["bssid"], hs["essid"], hs["filename"], key)
+            return CrackResultWPA(
+                hs["bssid"], hs["essid"], hs["filename"], key
+            )
         else:
             return None
 
@@ -306,7 +315,9 @@ class CrackHelper:
         key = Hashcat.crack_pmkid(hs["filename"], verbose=True)
 
         if key is not None:
-            return CrackResultPMKID(hs["bssid"], hs["essid"], hs["filename"], key)
+            return CrackResultPMKID(
+                hs["bssid"], hs["essid"], hs["filename"], key
+            )
         else:
             return None
 

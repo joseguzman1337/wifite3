@@ -46,9 +46,7 @@ class RealtimeCrackManager:
             ):
                 self.wordlist_queue.append(Configuration.hashcat_realtime_wordlist_file)
             else:
-                Color.pl(
-                    f"{{R}}Real-time: Specified wordlist file {{O}}{Configuration.hashcat_realtime_wordlist_file}{{R}} not found or empty.{W}"
-                )
+                Color.pl(f"{{R}}Real-time: Specified wordlist file {{O}}{Configuration.hashcat_realtime_wordlist_file}{{R}} not found or empty.{{W}}")
         elif Configuration.hashcat_realtime_wordlist_dir:
             if os.path.isdir(Configuration.hashcat_realtime_wordlist_dir):
                 try:
@@ -73,18 +71,12 @@ class RealtimeCrackManager:
                             ):
                                 self.wordlist_queue.append(filepath)
                 except OSError as e:
-                    Color.pl(
-                        f"{{R}}Real-time: Error reading wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}}: {e}{W}"
-                    )
+                    Color.pl(f"{{R}}Real-time: Error reading wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}}: {e}{{W}}")
             else:
-                Color.pl(
-                    f"{{R}}Real-time: Wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}} not found.{W}"
-                )
+                Color.pl(f"{{R}}Real-time: Wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}} not found.{{W}}")
 
         if not self.wordlist_queue:
-            Color.pl(
-                f"{{R}}Real-time: No valid wordlists found. Real-time cracking disabled for this target.{W}"
-            )
+            Color.pl(f"{{R}}Real-time: No valid wordlists found. Real-time cracking disabled for this target.{{W}}")
 
     def start_target_crack_session(
         self,
@@ -97,72 +89,41 @@ class RealtimeCrackManager:
             return
 
         if self.active_session and self.current_target_bssid == target_bssid:
-            Color.pl(
-                f"{{G}}Real-time: Session already active for {{C}}{target_bssid}{W}"
-            )
+            Color.pl(f"{{G}}Real-time: Session already active for {{C}}{target_bssid}{{W}}")
             return
-
+        
         if self.active_session:
-            Color.pl(
-                f"{{G}}Real-time: Stopping previous session for {{C}}{self.current_target_bssid}{{W}} to start new one for {{C}}{target_bssid}{W}"
-            )
-            self.stop_current_crack_attempt(
-                cleanup_hash_file=True
-            )  # Cleanup if previous hash file was temp
+            Color.pl(f"{{G}}Real-time: Stopping previous session for {{C}}{self.current_target_bssid}{{W}} to start new one for {{C}}{target_bssid}{{W}}")
+            self.stop_current_crack_attempt(cleanup_hash_file=True) # Cleanup if previous hash file was temp
 
-        Color.pl(
-            f"{{G}}Real-time: Initiating crack session for {{C}}{target_bssid}{W} ({essid}) using hash file {{C}}{hash_file_path}{W}"
-        )
+        Color.pl(f"{{G}}Real-time: Initiating crack session for {{C}}{target_bssid}{{W}} ({essid}) using hash file {{C}}{hash_file_path}{{W}}")
         self.current_target_bssid = target_bssid
         self.current_target_essid = essid  # Store ESSID for saving results
         self.current_hash_file_path = hash_file_path
         self.current_hash_type = hash_type
 
         self._load_wordlists()
-        if not self.wordlist_queue:  # No wordlists found
-            self.current_target_bssid = None  # Clear target as we can't proceed
-            self.current_hash_file_path = None
-            return
-
         self.consecutive_hashcat_errors = 0
         self._try_next_wordlist()
 
     def _try_next_wordlist(self):
-        if self.active_session:  # Should not happen if called correctly
-            Color.pl(
-                f"{{R}}Real-time: _try_next_wordlist called while a session is active. This is a bug.{W}"
-            )
-            self.stop_current_crack_attempt(
-                cleanup_hash_file=False
-            )  # Don't clean main hash, but stop session
+        if self.active_session: # Should not happen if called correctly
+            Color.pl(f"{{R}}Real-time: _try_next_wordlist called while a session is active. This is a bug.{{W}}")
+            self.stop_current_crack_attempt(cleanup_hash_file=False) # Don't clean main hash, but stop session
 
         if not self.wordlist_queue:
-            Color.pl(
-                f"{{G}}Real-time: All wordlists exhausted for {{C}}{self.current_target_bssid}{W}"
-            )
-            # Determine if the main hash file for this target was temporary (e.g. single PMKID string)
-            cleanup_main_hash = (
-                self.current_hash_file_path
-                and self.current_hash_file_path.startswith(Configuration.temp())
-            )
-            self.stop_current_crack_attempt(cleanup_hash_file=cleanup_main_hash)
+            Color.pl(f"{{G}}Real-time: All wordlists exhausted for {{C}}{self.current_target_bssid}{{W}}")
+            self.stop_current_crack_attempt(cleanup_hash_file=True)
             return
 
         if self.consecutive_hashcat_errors >= self.max_hashcat_errors:
-            Color.pl(
-                f"{{R}}Real-time: Exceeded max Hashcat start errors ({self.max_hashcat_errors}) for {{C}}{self.current_target_bssid}{W}. Aborting real-time crack for this target.{W}"
-            )
-            cleanup_main_hash = (
-                self.current_hash_file_path
-                and self.current_hash_file_path.startswith(Configuration.temp())
-            )
+            Color.pl(f"{{R}}Real-time: Exceeded max Hashcat start errors ({self.max_hashcat_errors}) for {{C}}{self.current_target_bssid}{{W}}. Aborting real-time crack for this target.{{W}}")
+            cleanup_main_hash = self.current_hash_file_path and self.current_hash_file_path.startswith(Configuration.temp())
             self.stop_current_crack_attempt(cleanup_hash_file=cleanup_main_hash)
             return
 
         self.current_wordlist_path = self.wordlist_queue.pop(0)
-        Color.pl(
-            f"{{G}}Real-time: Trying wordlist {{C}}{os.path.basename(self.current_wordlist_path)}{{W}} for {{C}}{self.current_target_bssid}{W} ({len(self.wordlist_queue)} remaining)"
-        )
+        Color.pl(f"{{G}}Real-time: Trying wordlist {{C}}{os.path.basename(self.current_wordlist_path)}{{W}} for {{C}}{self.current_target_bssid}{{W}} ({len(self.wordlist_queue)} remaining)")
 
         user_prefs = {}
         if Configuration.hashcat_realtime_force_cpu:
@@ -189,10 +150,9 @@ class RealtimeCrackManager:
 
         if self.active_session is None:
             self.consecutive_hashcat_errors += 1
-            Color.pl(
-                f"{{R}}Real-time: Failed to start Hashcat with wordlist {{O}}{os.path.basename(self.current_wordlist_path)}{{R}} for {{C}}{self.current_target_bssid}{W}"
-            )
-            self._try_next_wordlist()  # Try next one immediately
+            Color.pl(f"{{R}}Real-time: Failed to start Hashcat with wordlist {{O}}{os.path.basename(self.current_wordlist_path)}{{R}} for {{C}}{self.current_target_bssid}{{W}}")
+            return
+
 
     def update_status(self):
         if not self.active_session or not Configuration.hashcat_realtime:
@@ -211,13 +171,15 @@ class RealtimeCrackManager:
                 or "EXHAUSTED" in line.upper()
                 or Configuration.verbose > 2
             ):
+                wl_name = os.path.basename(self.current_wordlist_path) if self.current_wordlist_path else "N/A"
                 Color.pl(
-                    f"{{G}}Real-time Hashcat ({os.path.basename(self.current_wordlist_path)}): {{W}}{line.strip()}{W}"
+                    f"{{G}}Real-time Hashcat ({wl_name}): {{W}}{line.strip()}{{W}}"
                 )
 
         for line in status_info["error_lines"]:
+            wl_name = os.path.basename(self.current_wordlist_path) if self.current_wordlist_path else "N/A"
             Color.pl(
-                f"{{R}}Real-time Hashcat ERROR ({os.path.basename(self.current_wordlist_path)}): {{O}}{line.strip()}{W}"
+                f"{{R}}Real-time Hashcat ERROR ({wl_name}): {{O}}{line.strip()}{{W}}"
             )
 
         if status_info["cracked_password"]:
@@ -232,11 +194,6 @@ class RealtimeCrackManager:
                 essid=self.current_target_essid,
                 handshake_file=self.active_session.hash_file_path,  # This might be .hccapx or PMKID file
                 key=password,
-                attack_type=(
-                    "PMKID-Realtime"
-                    if self.current_hash_type == 16800
-                    else "WPA-Realtime"
-                ),
             )
             crack_result.dump()  # Saves to cracked.json and cracked.txt
 
@@ -250,8 +207,9 @@ class RealtimeCrackManager:
             return self.current_target_bssid, password  # Signal success
 
         elif status_info["is_process_complete"]:
+            wl_name = os.path.basename(self.current_wordlist_path) if self.current_wordlist_path else "N/A"
             Color.pl(
-                f"{{G}}Real-time: Wordlist {{C}}{os.path.basename(self.current_wordlist_path)}{{W}} exhausted for {{C}}{self.current_target_bssid}{W}."
+                f"{{G}}Real-time: Wordlist {{C}}{wl_name}{{W}} exhausted for {{C}}{self.current_target_bssid}{{W}}."
             )
             # Stop the session (cleans up session-specific pot/out files), but don't clean the main hash_file_path yet
             Hashcat.stop_realtime_crack(self.active_session, cleanup_hash_file=False)

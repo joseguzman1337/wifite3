@@ -60,7 +60,9 @@ class Airodump(Dependency):
         # For tracking decloaked APs (previously were hidden)
         self.decloaking = False
         self.decloaked_bssids = set()
-        self.decloaked_times = {}  # Map of BSSID(str) -> epoch(int) of last deauth
+        self.decloaked_times = (
+            {}
+        )  # Map of BSSID(str) -> epoch(int) of last deauth
 
         self.delete_existing_files = delete_existing_files
 
@@ -194,7 +196,9 @@ class Airodump(Dependency):
 
         if apply_filter:
             # Filter targets based on encryption & WPS capability
-            targets = Airodump.filter_targets(targets, skip_wps=self.skip_wps)
+            targets = Airodump.filter_targets(
+                targets, skip_wps=self.skip_wps
+            )
 
         # Sort by power
         targets.sort(key=lambda x: x.power, reverse=True)
@@ -287,10 +291,14 @@ class Airodump(Dependency):
         for target in targets:
             if Configuration.clients_only and len(target.clients) == 0:
                 continue
-            if "WEP" in Configuration.encryption_filter and "WEP" in target.encryption:
+            if (
+                "WEP" in Configuration.encryption_filter
+                and "WEP" in target.encryption
+            ):
                 result.append(target)
             elif (
-                "WPA" in Configuration.encryption_filter and "WPA" in target.encryption
+                "WPA" in Configuration.encryption_filter
+                and "WPA" in target.encryption
             ):
                 result.append(target)
             elif "WPS" in Configuration.encryption_filter and target.wps in [
@@ -309,12 +317,17 @@ class Airodump(Dependency):
             if (
                 result[i].essid is not None
                 and Configuration.ignore_essid is not None
-                and Configuration.ignore_essid.lower() in result[i].essid.lower()
+                and Configuration.ignore_essid.lower()
+                in result[i].essid.lower()
             ):
                 result.pop(i)
             elif bssid and result[i].bssid.lower() != bssid.lower():
                 result.pop(i)
-            elif essid and result[i].essid and result[i].essid.lower() != essid.lower():
+            elif (
+                essid
+                and result[i].essid
+                and result[i].essid.lower() != essid.lower()
+            ):
                 result.pop(i)
             else:
                 i += 1
@@ -337,7 +350,9 @@ class Airodump(Dependency):
         deauth_cmd = [
             "aireplay-ng",
             "-0",  # Deauthentication
-            str(Configuration.num_deauths),  # Number of deauth packets to send
+            str(
+                Configuration.num_deauths
+            ),  # Number of deauth packets to send
             "--ignore-negative-one",
         ]
 
@@ -346,7 +361,9 @@ class Airodump(Dependency):
                 continue
 
             now = int(time.time())
-            secs_since_decloak = now - self.decloaked_times.get(target.bssid, 0)
+            secs_since_decloak = now - self.decloaked_times.get(
+                target.bssid, 0
+            )
 
             if secs_since_decloak < 30:
                 continue  # Decloak every AP once every 30 seconds
@@ -367,7 +384,10 @@ class Airodump(Dependency):
 
             # Deauth clients
             for client in target.clients:
-                Process(deauth_cmd + ["-a", target.bssid, "-c", client.bssid, iface])
+                Process(
+                    deauth_cmd
+                    + ["-a", target.bssid, "-c", client.bssid, iface]
+                )
 
 
 if __name__ == "__main__":

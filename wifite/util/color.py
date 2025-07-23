@@ -67,6 +67,12 @@ class Color(object):
         return output
 
     @staticmethod
+    def strip(text):
+        '''Remove ANSI color codes from a string.'''
+        import re
+        return re.sub(r'\x1b\[[0-9;]*m', '', text)
+
+    @staticmethod
     def clear_line():
         spaces = " " * Color.last_sameline_length
         sys.stdout.write("\r%s\r" % spaces)
@@ -88,7 +94,11 @@ class Color(object):
         ESSID (Pwr) Attack_Type: Progress
         e.g.: Router2G (23db) WEP replay attack: 102 IVs
         """
-        essid = "{C}%s{W}" % target.essid if target.essid_known else "{O}unknown{W}"
+        essid = (
+            "{C}%s{W}" % target.essid
+            if target.essid_known
+            else "{O}unknown{W}"
+        )
         Color.p(
             "\r{+} {G}%s{W} ({C}%sdb{W}) {G}%s {C}%s{W}: %s "
             % (essid, target.power, attack_type, attack_name, progress)

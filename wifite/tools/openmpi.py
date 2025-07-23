@@ -36,7 +36,9 @@ class OpenMPI(Dependency):
         from multiprocessing import cpu_count
 
         if not OpenMPI.exists():
-            Color.pl("{!} {R}OpenMPI not available, falling back to sequential scan{W}")
+            Color.pl(
+                "{!} {R}OpenMPI not available, falling back to sequential scan{W}"
+            )
             return None
 
         Color.pl(
@@ -82,7 +84,8 @@ class OpenMPI(Dependency):
 
             elapsed_time = time.time() - start_time
             Color.pl(
-                "{+} {G}Parallel scan completed in {C}%.1f{G} seconds{W}" % elapsed_time
+                "{+} {G}Parallel scan completed in {C}%.1f{G} seconds{W}"
+                % elapsed_time
             )
 
             # Show any MPI output for debugging
@@ -102,7 +105,9 @@ class OpenMPI(Dependency):
             return OpenMPI._aggregate_scan_results(temp_dir)
 
         except subprocess.TimeoutExpired:
-            Color.pl("{!} {O}Parallel scan timed out, returning partial results{W}")
+            Color.pl(
+                "{!} {O}Parallel scan timed out, returning partial results{W}"
+            )
             return OpenMPI._aggregate_scan_results(temp_dir)
 
         except Exception as e:
@@ -119,7 +124,9 @@ class OpenMPI(Dependency):
                 pass
 
     @staticmethod
-    def _create_mpi_scanner_script(interface, channels, scan_duration, temp_dir):
+    def _create_mpi_scanner_script(
+        interface, channels, scan_duration, temp_dir
+    ):
         """Create MPI scanner script for parallel execution"""
         import tempfile
         import os
@@ -176,7 +183,9 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 """
 
         # Write script to temporary file
-        script_fd, script_path = tempfile.mkstemp(suffix=".py", prefix="mpi_scanner_")
+        script_fd, script_path = tempfile.mkstemp(
+            suffix=".py", prefix="mpi_scanner_"
+        )
         with os.fdopen(script_fd, "w") as f:
             f.write(scanner_script_content)
 
@@ -217,7 +226,9 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 
         for csv_file in csv_files:
             try:
-                with open(csv_file, "r", encoding="utf-8", errors="ignore") as f:
+                with open(
+                    csv_file, "r", encoding="utf-8", errors="ignore"
+                ) as f:
                     content = f.read()
 
                     # Split content into AP and Station sections
@@ -225,14 +236,18 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
                         parts = content.split("Station MAC")
                         ap_section = parts[0]
                         station_section = (
-                            "Station MAC" + parts[1] if len(parts) > 1 else ""
+                            "Station MAC" + parts[1]
+                            if len(parts) > 1
+                            else ""
                         )
                     else:
                         ap_section = content
                         station_section = ""
 
                     # Parse Access Points
-                    OpenMPI._parse_access_points(ap_section, all_targets, network_stats)
+                    OpenMPI._parse_access_points(
+                        ap_section, all_targets, network_stats
+                    )
 
                     # Parse Client Stations
                     if station_section:
@@ -242,12 +257,15 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 
             except Exception as e:
                 Color.pl(
-                    "{!} {O}Warning: Failed to parse %s: %s{W}" % (csv_file, str(e))
+                    "{!} {O}Warning: Failed to parse %s: %s{W}"
+                    % (csv_file, str(e))
                 )
                 continue
 
         # Display comprehensive analysis
-        OpenMPI._display_network_intelligence(network_stats, all_targets, all_clients)
+        OpenMPI._display_network_intelligence(
+            network_stats, all_targets, all_clients
+        )
 
         return {
             "targets": list(all_targets.values()),
@@ -292,7 +310,9 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
         ]
 
         all_channels = (
-            channels_24ghz + channels_5ghz if Configuration.five_ghz else channels_24ghz
+            channels_24ghz + channels_5ghz
+            if Configuration.five_ghz
+            else channels_24ghz
         )
 
         Color.pl(
@@ -361,14 +381,20 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
                             )
                             if channel > 0:
                                 network_stats["channel_usage"][channel] = (
-                                    network_stats["channel_usage"].get(channel, 0) + 1
+                                    network_stats["channel_usage"].get(
+                                        channel, 0
+                                    )
+                                    + 1
                                 )
                         except:
                             pass
 
                         # Track network types
                         network_stats["network_types"][network_type] = (
-                            network_stats["network_types"].get(network_type, 0) + 1
+                            network_stats["network_types"].get(
+                                network_type, 0
+                            )
+                            + 1
                         )
                         network_stats["unique_vendors"].add(vendor)
 
@@ -443,7 +469,10 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
             return "Open"
 
         # Guest networks
-        if any(keyword in essid for keyword in ["guest", "public", "free", "open"]):
+        if any(
+            keyword in essid
+            for keyword in ["guest", "public", "free", "open"]
+        ):
             return "Guest"
 
         # IoT/Smart devices
@@ -508,7 +537,11 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
         probed = probed_essids.lower() if probed_essids else ""
 
         # Mobile devices
-        if vendor in ["Apple", "Samsung"] or "iphone" in probed or "android" in probed:
+        if (
+            vendor in ["Apple", "Samsung"]
+            or "iphone" in probed
+            or "android" in probed
+        ):
             return "Mobile"
 
         # Laptops/Computers
@@ -521,19 +554,22 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 
         # IoT devices
         if any(
-            iot_term in probed for iot_term in ["cam", "iot", "smart", "ring", "nest"]
+            iot_term in probed
+            for iot_term in ["cam", "iot", "smart", "ring", "nest"]
         ):
             return "IoT"
 
         # Printers
         if any(
-            printer_term in probed for printer_term in ["print", "canon", "hp", "epson"]
+            printer_term in probed
+            for printer_term in ["print", "canon", "hp", "epson"]
         ):
             return "Printer"
 
         # Gaming devices
         if any(
-            gaming_term in probed for gaming_term in ["xbox", "playstation", "nintendo"]
+            gaming_term in probed
+            for gaming_term in ["xbox", "playstation", "nintendo"]
         ):
             return "Gaming"
 
@@ -560,7 +596,9 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
             network_stats["open_networks"] += 1
 
     @staticmethod
-    def _display_network_intelligence(network_stats, all_targets, all_clients):
+    def _display_network_intelligence(
+        network_stats, all_targets, all_clients
+    ):
         """Display comprehensive network intelligence analysis"""
         from ..util.color import Color
 
@@ -570,22 +608,48 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
 
         # Network overview
         Color.pl("{+} {C}📡 NETWORK OVERVIEW:{W}")
-        Color.pl("  {G}Total Networks:{W} {C}%d{W}" % network_stats["total_networks"])
-        Color.pl("  {G}Total Clients:{W} {C}%d{W}" % network_stats["total_clients"])
-        Color.pl("  {G}Hidden Networks:{W} {C}%d{W}" % network_stats["hidden_networks"])
         Color.pl(
-            "  {G}Unique Vendors:{W} {C}%d{W}" % len(network_stats["unique_vendors"])
+            "  {G}Total Networks:{W} {C}%d{W}"
+            % network_stats["total_networks"]
+        )
+        Color.pl(
+            "  {G}Total Clients:{W} {C}%d{W}"
+            % network_stats["total_clients"]
+        )
+        Color.pl(
+            "  {G}Hidden Networks:{W} {C}%d{W}"
+            % network_stats["hidden_networks"]
+        )
+        Color.pl(
+            "  {G}Unique Vendors:{W} {C}%d{W}"
+            % len(network_stats["unique_vendors"])
         )
 
         # Security analysis
         Color.pl("")
         Color.pl("{+} {C}🔒 SECURITY ANALYSIS:{W}")
-        Color.pl("  {R}Open Networks:{W} {C}%d{W}" % network_stats["open_networks"])
-        Color.pl("  {O}WEP Networks:{W} {C}%d{W}" % network_stats["wep_networks"])
-        Color.pl("  {Y}WPA Networks:{W} {C}%d{W}" % network_stats["wpa_networks"])
-        Color.pl("  {G}WPA2 Networks:{W} {C}%d{W}" % network_stats["wpa2_networks"])
-        Color.pl("  {G}WPA3 Networks:{W} {C}%d{W}" % network_stats["wpa3_networks"])
-        Color.pl("  {B}Enterprise:{W} {C}%d{W}" % network_stats["enterprise_networks"])
+        Color.pl(
+            "  {R}Open Networks:{W} {C}%d{W}"
+            % network_stats["open_networks"]
+        )
+        Color.pl(
+            "  {O}WEP Networks:{W} {C}%d{W}" % network_stats["wep_networks"]
+        )
+        Color.pl(
+            "  {Y}WPA Networks:{W} {C}%d{W}" % network_stats["wpa_networks"]
+        )
+        Color.pl(
+            "  {G}WPA2 Networks:{W} {C}%d{W}"
+            % network_stats["wpa2_networks"]
+        )
+        Color.pl(
+            "  {G}WPA3 Networks:{W} {C}%d{W}"
+            % network_stats["wpa3_networks"]
+        )
+        Color.pl(
+            "  {B}Enterprise:{W} {C}%d{W}"
+            % network_stats["enterprise_networks"]
+        )
 
         # Network types
         if network_stats["network_types"]:
@@ -610,7 +674,8 @@ print(f"[Rank {{rank}}] Ninja scan complete for {{len(my_channels)}} channels")
             for channel, count in sorted_channels:
                 band = "2.4GHz" if channel <= 14 else "5GHz"
                 Color.pl(
-                    "  {G}Ch %d (%s):{W} {C}%d networks{W}" % (channel, band, count)
+                    "  {G}Ch %d (%s):{W} {C}%d networks{W}"
+                    % (channel, band, count)
                 )
 
         # Top vendors

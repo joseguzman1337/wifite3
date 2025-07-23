@@ -37,7 +37,9 @@ class AttackPMKID(Attack):
 
         file_re = re.compile(".*pmkid_.*\\.16800")
         for filename in os.listdir(Configuration.wpa_handshake_dir):
-            pmkid_filename = os.path.join(Configuration.wpa_handshake_dir, filename)
+            pmkid_filename = os.path.join(
+                Configuration.wpa_handshake_dir, filename
+            )
             if not os.path.isfile(pmkid_filename):
                 continue
             if not re.match(file_re, pmkid_filename):
@@ -47,7 +49,9 @@ class AttackPMKID(Attack):
                 pmkid_hash = pmkid_handle.read().strip()
                 if pmkid_hash.count("*") < 3:
                     continue
-                existing_bssid = pmkid_hash.split("*")[1].lower().replace(":", "")
+                existing_bssid = (
+                    pmkid_hash.split("*")[1].lower().replace(":", "")
+                )
                 if existing_bssid == bssid:
                     return pmkid_filename
         return None
@@ -69,7 +73,9 @@ class AttackPMKID(Attack):
             HcxDumpTool.dependency_name,
             HcxPcapTool.dependency_name,
         ]
-        missing_deps = [dep for dep in dependencies if not Process.exists(dep)]
+        missing_deps = [
+            dep for dep in dependencies if not Process.exists(dep)
+        ]
         if len(missing_deps) > 0:
             Color.pl(
                 "{!} Skipping PMKID attack, missing required tools: {O}%s{W}"
@@ -87,7 +93,8 @@ class AttackPMKID(Attack):
                     "PMKID",
                     self.target,
                     "CAPTURE",
-                    "Loaded {C}existing{W} PMKID hash: {C}%s{W}\n" % pmkid_file,
+                    "Loaded {C}existing{W} PMKID hash: {C}%s{W}\n"
+                    % pmkid_file,
                 )
 
         if pmkid_file is None:
@@ -119,11 +126,15 @@ class AttackPMKID(Attack):
                 )
                 # The attack will continue with its own cracking logic below,
                 # real-time cracking runs in parallel.
-            elif self.realtime_crack_manager.get_cracked_password(self.target.bssid):
+            elif self.realtime_crack_manager.get_cracked_password(
+                self.target.bssid
+            ):
                 Color.pl(
                     "{+} {G}PMKID available, but target already cracked by real-time manager.{W}"
                 )
-            elif self.realtime_crack_manager.is_actively_cracking(self.target.bssid):
+            elif self.realtime_crack_manager.is_actively_cracking(
+                self.target.bssid
+            ):
                 Color.pl(
                     "{+} {G}PMKID available, real-time cracking already in progress for this target.{W}"
                 )
@@ -141,7 +152,9 @@ class AttackPMKID(Attack):
             # If no real-time session, then it's a fail for this attack module.
             if not (
                 self.realtime_crack_manager
-                and self.realtime_crack_manager.is_actively_cracking(self.target.bssid)
+                and self.realtime_crack_manager.is_actively_cracking(
+                    self.target.bssid
+                )
             ):
                 return False
 
@@ -191,7 +204,9 @@ class AttackPMKID(Attack):
             return None  # No hash found.
 
         Color.clear_entire_line()
-        Color.pattack("PMKID", self.target, "CAPTURE", "{G}Captured PMKID{W}")
+        Color.pattack(
+            "PMKID", self.target, "CAPTURE", "{G}Captured PMKID{W}"
+        )
         pmkid_file = self.save_pmkid(pmkid_hash)
         return pmkid_file
 
@@ -220,7 +235,8 @@ class AttackPMKID(Attack):
                 "PMKID",
                 self.target,
                 "CRACK",
-                "Cracking PMKID using {C}%s{W} ...\n" % Configuration.wordlist,
+                "Cracking PMKID using {C}%s{W} ...\n"
+                % Configuration.wordlist,
             )
             key = Hashcat.crack_pmkid(pmkid_file)
 
@@ -238,7 +254,9 @@ class AttackPMKID(Attack):
         else:
             # Successfully cracked.
             Color.clear_entire_line()
-            Color.pattack("PMKID", self.target, "CRACKED", "{C}Key: {G}%s{W}" % key)
+            Color.pattack(
+                "PMKID", self.target, "CRACKED", "{C}Key: {G}%s{W}" % key
+            )
             self.crack_result = CrackResultPMKID(
                 self.target.bssid, self.target.essid, pmkid_file, key
             )
@@ -267,9 +285,13 @@ class AttackPMKID(Attack):
         bssid_safe = self.target.bssid.replace(":", "-")
         date = time.strftime("%Y-%m-%dT%H-%M-%S")
         pmkid_file = "pmkid_%s_%s_%s.16800" % (essid_safe, bssid_safe, date)
-        pmkid_file = os.path.join(Configuration.wpa_handshake_dir, pmkid_file)
+        pmkid_file = os.path.join(
+            Configuration.wpa_handshake_dir, pmkid_file
+        )
 
-        Color.p("\n{+} Saving copy of {C}PMKID Hash{W} to {C}%s{W} " % pmkid_file)
+        Color.p(
+            "\n{+} Saving copy of {C}PMKID Hash{W} to {C}%s{W} " % pmkid_file
+        )
         with open(pmkid_file, "w") as pmkid_handle:
             pmkid_handle.write(pmkid_hash)
             pmkid_handle.write("\n")

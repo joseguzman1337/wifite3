@@ -16,16 +16,27 @@ class CrackResultWPA(CrackResult):
 
     def dump(self):
         if self.essid:
-            Color.pl("{+} %s: {C}%s{W}" % ("Access Point Name".rjust(19), self.essid))
+            Color.pl(
+                "{+} %s: {C}%s{W}"
+                % ("Access Point Name".rjust(19), self.essid)
+            )
         if self.bssid:
-            Color.pl("{+} %s: {C}%s{W}" % ("Access Point BSSID".rjust(19), self.bssid))
-        Color.pl("{+} %s: {C}%s{W}" % ("Encryption".rjust(19), self.result_type))
+            Color.pl(
+                "{+} %s: {C}%s{W}"
+                % ("Access Point BSSID".rjust(19), self.bssid)
+            )
+        Color.pl(
+            "{+} %s: {C}%s{W}" % ("Encryption".rjust(19), self.result_type)
+        )
         if self.handshake_file:
             Color.pl(
-                "{+} %s: {C}%s{W}" % ("Handshake File".rjust(19), self.handshake_file)
+                "{+} %s: {C}%s{W}"
+                % ("Handshake File".rjust(19), self.handshake_file)
             )
         if self.key:
-            Color.pl("{+} %s: {G}%s{W}" % ("PSK (password)".rjust(19), self.key))
+            Color.pl(
+                "{+} %s: {G}%s{W}" % ("PSK (password)".rjust(19), self.key)
+            )
         else:
             Color.pl("{!} %s  {O}key unknown{W}" % "".rjust(19))
 
@@ -48,10 +59,14 @@ class CrackResultWPA(CrackResult):
 
 
 if __name__ == "__main__":
-    w = CrackResultWPA("AA:BB:CC:DD:EE:FF", "Test Router", "hs/capfile.cap", "abcd1234")
+    w = CrackResultWPA(
+        "AA:BB:CC:DD:EE:FF", "Test Router", "hs/capfile.cap", "abcd1234"
+    )
     w.dump()
 
-    w = CrackResultWPA("AA:BB:CC:DD:EE:FF", "Test Router", "hs/capfile.cap", "Key")
+    w = CrackResultWPA(
+        "AA:BB:CC:DD:EE:FF", "Test Router", "hs/capfile.cap", "Key"
+    )
     print("\n")
     w.dump()
     w.save()

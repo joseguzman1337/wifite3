@@ -19,7 +19,10 @@ class Macchanger(Dependency):
         from ..util.process import Process
 
         Color.clear_entire_line()
-        Color.p("\r{+} {C}macchanger{W}: taking interface {C}%s{W} down..." % iface)
+        Color.p(
+            "\r{+} {C}macchanger{W}: taking interface {C}%s{W} down..."
+            % iface
+        )
 
         Ifconfig.down(iface)
 
@@ -36,13 +39,20 @@ class Macchanger(Dependency):
         macch.wait()
         if macch.poll() != 0:
             Color.pl(
-                "\n{!} {R}macchanger{O}: error running {R}%s{O}" % " ".join(command)
+                "\n{!} {R}macchanger{O}: error running {R}%s{O}"
+                % " ".join(command)
             )
-            Color.pl("{!} {R}output: {O}%s, %s{W}" % (macch.stdout(), macch.stderr()))
+            Color.pl(
+                "{!} {R}output: {O}%s, %s{W}"
+                % (macch.stdout(), macch.stderr())
+            )
             return False
 
         Color.clear_entire_line()
-        Color.p("\r{+} {C}macchanger{W}: bringing interface {C}%s{W} up..." % iface)
+        Color.p(
+            "\r{+} {C}macchanger{W}: bringing interface {C}%s{W} up..."
+            % iface
+        )
 
         Ifconfig.up(iface)
 
@@ -58,7 +68,9 @@ class Macchanger(Dependency):
     @classmethod
     def reset(cls):
         iface = cls.get_interface()
-        Color.pl("\r{+} {C}macchanger{W}: resetting mac address on %s..." % iface)
+        Color.pl(
+            "\r{+} {C}macchanger{W}: resetting mac address on %s..." % iface
+        )
         # -p to reset to permanent MAC address
         if cls.down_macch_up(iface, ["-p"]):
             new_mac = Ifconfig.get_mac(iface)
@@ -78,7 +90,10 @@ class Macchanger(Dependency):
             return
 
         iface = cls.get_interface()
-        Color.pl("\n{+} {C}macchanger{W}: changing mac address on {C}%s{W}" % iface)
+        Color.pl(
+            "\n{+} {C}macchanger{W}: changing mac address on {C}%s{W}"
+            % iface
+        )
 
         # -r to use random MAC address
         # -e to keep vendor bytes the same

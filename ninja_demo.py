@@ -45,7 +45,9 @@ try:
         ]
 
         for privacy, cipher, auth, essid, description in test_networks:
-            net_type = OpenMPI._detect_network_type(privacy, cipher, auth, essid)
+            net_type = OpenMPI._detect_network_type(
+                privacy, cipher, auth, essid
+            )
             Color.pl(
                 "  {C}%-12s{W} | {G}%-15s{W} | {D}%s{W}"
                 % (net_type, essid, description)
@@ -70,7 +72,8 @@ try:
         for mac, description in test_devices:
             vendor = OpenMPI._detect_vendor_from_mac(mac)
             Color.pl(
-                "  {C}%-8s{W} | {G}%-17s{W} | {D}%s{W}" % (vendor, mac, description)
+                "  {C}%-8s{W} | {G}%-17s{W} | {D}%s{W}"
+                % (vendor, mac, description)
             )
 
     def demo_device_classification():
@@ -157,22 +160,48 @@ try:
 
         # Network overview
         Color.pl("{+} {C}📡 NETWORK OVERVIEW:{W}")
-        Color.pl("  {G}Total Networks:{W} {C}%d{W}" % network_stats["total_networks"])
-        Color.pl("  {G}Total Clients:{W} {C}%d{W}" % network_stats["total_clients"])
-        Color.pl("  {G}Hidden Networks:{W} {C}%d{W}" % network_stats["hidden_networks"])
         Color.pl(
-            "  {G}Unique Vendors:{W} {C}%d{W}" % len(network_stats["unique_vendors"])
+            "  {G}Total Networks:{W} {C}%d{W}"
+            % network_stats["total_networks"]
+        )
+        Color.pl(
+            "  {G}Total Clients:{W} {C}%d{W}"
+            % network_stats["total_clients"]
+        )
+        Color.pl(
+            "  {G}Hidden Networks:{W} {C}%d{W}"
+            % network_stats["hidden_networks"]
+        )
+        Color.pl(
+            "  {G}Unique Vendors:{W} {C}%d{W}"
+            % len(network_stats["unique_vendors"])
         )
 
         # Security analysis
         Color.pl("")
         Color.pl("{+} {C}🔒 SECURITY ANALYSIS:{W}")
-        Color.pl("  {R}Open Networks:{W} {C}%d{W}" % network_stats["open_networks"])
-        Color.pl("  {O}WEP Networks:{W} {C}%d{W}" % network_stats["wep_networks"])
-        Color.pl("  {Y}WPA Networks:{W} {C}%d{W}" % network_stats["wpa_networks"])
-        Color.pl("  {G}WPA2 Networks:{W} {C}%d{W}" % network_stats["wpa2_networks"])
-        Color.pl("  {G}WPA3 Networks:{W} {C}%d{W}" % network_stats["wpa3_networks"])
-        Color.pl("  {B}Enterprise:{W} {C}%d{W}" % network_stats["enterprise_networks"])
+        Color.pl(
+            "  {R}Open Networks:{W} {C}%d{W}"
+            % network_stats["open_networks"]
+        )
+        Color.pl(
+            "  {O}WEP Networks:{W} {C}%d{W}" % network_stats["wep_networks"]
+        )
+        Color.pl(
+            "  {Y}WPA Networks:{W} {C}%d{W}" % network_stats["wpa_networks"]
+        )
+        Color.pl(
+            "  {G}WPA2 Networks:{W} {C}%d{W}"
+            % network_stats["wpa2_networks"]
+        )
+        Color.pl(
+            "  {G}WPA3 Networks:{W} {C}%d{W}"
+            % network_stats["wpa3_networks"]
+        )
+        Color.pl(
+            "  {B}Enterprise:{W} {C}%d{W}"
+            % network_stats["enterprise_networks"]
+        )
 
         # Channel usage
         Color.pl("")
@@ -183,7 +212,10 @@ try:
             reverse=True,
         ):
             band = "2.4GHz" if channel <= 14 else "5GHz"
-            Color.pl("  {G}Ch %d (%s):{W} {C}%d networks{W}" % (channel, band, count))
+            Color.pl(
+                "  {G}Ch %d (%s):{W} {C}%d networks{W}"
+                % (channel, band, count)
+            )
 
         # Risk assessment
         Color.pl("")
@@ -204,7 +236,8 @@ try:
             risk_level = "{G}LOW{W}"
 
         Color.pl(
-            "  {G}Environment Risk Level:{W} %s {C}(%.1f){W}" % (risk_level, risk_score)
+            "  {G}Environment Risk Level:{W} %s {C}(%.1f){W}"
+            % (risk_level, risk_score)
         )
 
     def demo_mpi_capabilities():
@@ -214,19 +247,35 @@ try:
 
         if OpenMPI.exists():
             cpu_count = OpenMPI.get_cpu_count()
-            Color.pl("  {G}✅ OpenMPI Available:{W} {C}Ready for parallel scanning{W}")
-            Color.pl("  {G}CPU Cores:{W} {C}%d processes available{W}" % cpu_count)
-            Color.pl("  {G}Channel Coverage:{W} {C}39 channels (2.4GHz + 5GHz){W}")
-            Color.pl("  {G}Scan Duration:{W} {C}137 seconds comprehensive{W}")
-            Color.pl("  {G}Analysis Features:{W} {C}Real-time intelligence{W}")
+            Color.pl(
+                "  {G}✅ OpenMPI Available:{W} {C}Ready for parallel scanning{W}"
+            )
+            Color.pl(
+                "  {G}CPU Cores:{W} {C}%d processes available{W}" % cpu_count
+            )
+            Color.pl(
+                "  {G}Channel Coverage:{W} {C}39 channels (2.4GHz + 5GHz){W}"
+            )
+            Color.pl(
+                "  {G}Scan Duration:{W} {C}137 seconds comprehensive{W}"
+            )
+            Color.pl(
+                "  {G}Analysis Features:{W} {C}Real-time intelligence{W}"
+            )
         else:
-            Color.pl("  {O}⚠️  OpenMPI Not Available:{W} {C}Sequential mode only{W}")
-            Color.pl("  {G}Install with:{W} {C}apt-get install openmpi-bin{W}")
+            Color.pl(
+                "  {O}⚠️  OpenMPI Not Available:{W} {C}Sequential mode only{W}"
+            )
+            Color.pl(
+                "  {G}Install with:{W} {C}apt-get install openmpi-bin{W}"
+            )
 
     def main():
         """Main demonstration function"""
         Color.pl("{+} {R}🥷 WIFITE3 NINJA INTELLIGENCE SYSTEM DEMO{W}")
-        Color.pl("{+} {G}================================================{W}")
+        Color.pl(
+            "{+} {G}================================================{W}"
+        )
         Color.pl("{+} {C}Comprehensive wireless network reconnaissance{W}")
         Color.pl("{+} {C}and intelligence analysis platform{W}")
 
@@ -244,12 +293,18 @@ try:
         Color.pl(
             "  {C}• Vendor Identification:{W} Apple/Samsung/Intel/Cisco/Huawei/Google/Microsoft"
         )
-        Color.pl("  {C}• Device Classification:{W} Mobile/Computer/IoT/Printer/Gaming")
-        Color.pl("  {C}• Client Analysis:{W} MAC/Vendor/Type/Probed Networks/Activity")
+        Color.pl(
+            "  {C}• Device Classification:{W} Mobile/Computer/IoT/Printer/Gaming"
+        )
+        Color.pl(
+            "  {C}• Client Analysis:{W} MAC/Vendor/Type/Probed Networks/Activity"
+        )
         Color.pl(
             "  {C}• Risk Assessment:{W} Environment security scoring (High/Medium/Low)"
         )
-        Color.pl("  {C}• Channel Analysis:{W} 2.4GHz/5GHz usage mapping and congestion")
+        Color.pl(
+            "  {C}• Channel Analysis:{W} 2.4GHz/5GHz usage mapping and congestion"
+        )
         Color.pl(
             "  {C}• MPI Parallelization:{W} Multi-core scanning for maximum coverage"
         )
@@ -259,7 +314,9 @@ try:
 
         Color.pl("")
         Color.pl("{+} {G}✅ WIFITE3 NINJA INTELLIGENCE SYSTEM READY!{W}")
-        Color.pl("{+} {C}Use: python3 wifite --ninja-scan for full reconnaissance{W}")
+        Color.pl(
+            "{+} {C}Use: python3 wifite --ninja-scan for full reconnaissance{W}"
+        )
 
     # Run the demonstration
     if __name__ == "__main__":

@@ -17,7 +17,9 @@ class TestAttackAll(unittest.TestCase):
         Configuration.no_deauth = True
         Configuration.wps_pixie = False
         Configuration.wps_pin = False
-        Configuration.use_pmkid_only = False  # Allow WPA handshake attack to be queued
+        Configuration.use_pmkid_only = (
+            False  # Allow WPA handshake attack to be queued
+        )
         Configuration.wordlist = None  # Prevent local cracking attempts
         Configuration.hashcat_realtime = True  # Enable for these tests
         Configuration.temp_dir = "/tmp/wifite_test_temp_all"
@@ -73,7 +75,9 @@ class TestAttackAll(unittest.TestCase):
         # We are interested if attack_single correctly uses the info from update_status
         # Need to patch Color.pl as it's called when a target is skipped due to being pre-cracked.
         with patch("wifite.util.color.Color.pl") as mock_color_pl:
-            AttackAll.attack_multiple([target], realtime_crack_manager=mock_rt_manager)
+            AttackAll.attack_multiple(
+                [target], realtime_crack_manager=mock_rt_manager
+            )
 
         # Assert that no actual attack class (PMKID, WPA) was instantiated or run
         # because the real-time manager should have "cracked" it.
@@ -97,7 +101,9 @@ class TestAttackAll(unittest.TestCase):
     @patch(
         "wifite.attack.wpa.AttackWPA.__init__", return_value=None
     )  # Mock init to avoid issues
-    @patch("wifite.attack.pmkid.AttackPMKID")  # Mock PMKID to prevent its run
+    @patch(
+        "wifite.attack.pmkid.AttackPMKID"
+    )  # Mock PMKID to prevent its run
     @patch("wifite.attack.all.AttackWPS.can_attack_wps", return_value=False)
     def test_attack_single_stops_realtime_if_other_attack_succeeds(
         self, mock_can_wps, MockAttackPMKID, mock_wpa_init, mock_wpa_run
@@ -128,7 +134,9 @@ class TestAttackAll(unittest.TestCase):
         mock_rt_manager.update_status.return_value = (
             None  # Real-time does not find password initially
         )
-        mock_rt_manager.get_cracked_password.return_value = None  # Not pre-cracked
+        mock_rt_manager.get_cracked_password.return_value = (
+            None  # Not pre-cracked
+        )
         mock_rt_manager.is_actively_cracking.return_value = (
             True  # Simulate it's active for this BSSID
         )
@@ -137,7 +145,9 @@ class TestAttackAll(unittest.TestCase):
         # We mock the run to return True, and need to mock the attack object itself.
         mock_wpa_instance = MagicMock()
         mock_wpa_instance.run = mock_wpa_run
-        mock_wpa_instance.success = True  # Simulate successful crack by AttackWPA
+        mock_wpa_instance.success = (
+            True  # Simulate successful crack by AttackWPA
+        )
         mock_wpa_instance.crack_result = (
             MagicMock()
         )  # Needs a crack_result object with save()
@@ -148,7 +158,9 @@ class TestAttackAll(unittest.TestCase):
         with patch(
             "wifite.attack.all.AttackWPA", return_value=mock_wpa_instance
         ) as PatchedAttackWPA:
-            AttackAll.attack_single(target, 0, realtime_crack_manager=mock_rt_manager)
+            AttackAll.attack_single(
+                target, 0, realtime_crack_manager=mock_rt_manager
+            )
 
         # Assert that AttackWPA was instantiated with the target and manager
         PatchedAttackWPA.assert_called_once_with(target, mock_rt_manager)

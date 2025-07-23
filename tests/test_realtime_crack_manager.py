@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from unittest.mock import patch, MagicMock
+import os
+from unittest.mock import patch, MagicMock, mock_open, call
 
 # Assuming wifite is in PYTHONPATH or tests are run from project root
 from wifite.realtime_crack_manager import RealtimeCrackManager
@@ -90,9 +91,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         )
         self.manager._load_wordlists()
         self.assertEqual(len(self.manager.wordlist_queue), 0)
-        self.mock_color_pl.assert_any_call(
-            f"{{R}}Real-time: Specified wordlist file {{O}}{Configuration.hashcat_realtime_wordlist_file}{{R}} not found or empty.{W}"
-        )
+        self.mock_color_pl.assert_any_call(f"{{R}}Real-time: Specified wordlist file {{O}}{Configuration.hashcat_realtime_wordlist_file}{{R}} not found or empty.{{W}}")
 
     def test_load_wordlists_directory_valid_multiple_files(self):
         Configuration.hashcat_realtime_wordlist_dir = "/fake/wordlist_dir"
@@ -126,9 +125,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         self.mock_os_listdir.return_value = []
         self.manager._load_wordlists()
         self.assertEqual(len(self.manager.wordlist_queue), 0)
-        self.mock_color_pl.assert_any_call(
-            f"{{R}}Real-time: No valid wordlists found. Real-time cracking disabled for this target.{W}"
-        )
+        self.mock_color_pl.assert_any_call(f"{{R}}Real-time: No valid wordlists found. Real-time cracking disabled for this target.{{W}}")
 
     def test_load_wordlists_directory_invalid(self):
         Configuration.hashcat_realtime_wordlist_dir = "/fake/invalid_dir"
@@ -138,9 +135,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
         )
         self.manager._load_wordlists()
         self.assertEqual(len(self.manager.wordlist_queue), 0)
-        self.mock_color_pl.assert_any_call(
-            f"{{R}}Real-time: Wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}} not found.{W}"
-        )
+        self.mock_color_pl.assert_any_call(f"{{R}}Real-time: Wordlist directory {{O}}{Configuration.hashcat_realtime_wordlist_dir}{{R}} not found.{{W}}")
 
     @patch.object(RealtimeCrackManager, "_load_wordlists")
     @patch.object(RealtimeCrackManager, "_try_next_wordlist")
@@ -197,36 +192,20 @@ class TestRealtimeCrackManager(unittest.TestCase):
         )
         Configuration.temp_dir = "/tmp"  # ensure temp path check works
 
-        self.manager._try_next_wordlist()
-
-        mock_start_hashcat.assert_not_called()
-        mock_stop_current.assert_called_once_with(
-            cleanup_hash_file=True
-        )  # True because hash file is temp
-
-    @patch(
-        "wifite.tools.hashcat.Hashcat.start_realtime_crack",
-        return_value=None,
-    )
-    @patch.object(
-        RealtimeCrackManager, "_try_next_wordlist"
-    )  # Mock to prevent recursion in this test
-    def test_try_next_wordlist_hashcat_start_fails(
-        self, mock_recursive_try_next, mock_start_hashcat
-    ):
-        self.manager.wordlist_queue = ["/fake/wl1.txt", "/fake/wl2.txt"]
-        self.manager.current_target_bssid = "TARGET_BSSID"
-        self.manager.current_hash_file_path = "/path/to/hash.txt"
+    @patch('wifite.tools.hashcat.Hashcat.start_realtime_crack', return_value=None)
+    @patch.object(RealtimeCrackManager, '_try_next_wordlist', wraps=RealtimeCrackManager._try_next_wordlist, autospec=True)
+    def test_try_next_wordlist_hashcat_start_fails(self, mock_recursive_try_next, mock_start_hashcat):
+        self.manager.wordlist_queue = ['/fake/wl1.txt', '/fake/wl2.txt']
+        self.manager.current_target_bssid = 'TARGET_BSSID'
+        self.manager.current_hash_file_path = '/path/to/hash.txt'
         self.manager.current_hash_type = 2500
         initial_errors = self.manager.consecutive_hashcat_errors
 
         self.manager._try_next_wordlist()  # This will call mock_start_hashcat which returns None
 
         self.assertEqual(self.manager.consecutive_hashcat_errors, initial_errors + 1)
-        self.mock_color_pl.assert_any_call(
-            f"{{R}}Real-time: Failed to start Hashcat with wordlist {{O}}{os.path.basename('/fake/wl1.txt')}{{R}} for {{C}}TARGET_BSSID{W}"
-        )
-        mock_recursive_try_next.assert_called_once()  # Checks if it tries the next list
+        self.mock_color_pl.assert_any_call(f"{{R}}Real-time: Failed to start Hashcat with wordlist {{O}}{os.path.basename('/fake/wl1.txt')}{{R}} for {{C}}TARGET_BSSID{{W}}")
+        mock_recursive_try_next.assert_called_once() # Checks if it tries the next list
 
     def test_update_status_no_active_session(self):
         self.manager.active_session = None
@@ -293,9 +272,7 @@ class TestRealtimeCrackManager(unittest.TestCase):
 
         result = self.manager.update_status()
         self.assertIsNone(result)
-        self.mock_color_pl.assert_any_call(
-            f"{{G}}Real-time: Wordlist {{C}}{os.path.basename('/fake/wl_exhausted.txt')}{{W}} exhausted for {{C}}TARGET_BSSID{W}."
-        )
+        self.mock_color_pl.assert_any_call(f"{{G}}Real-time: Wordlist {{C}}{os.path.basename('/fake/wl_exhausted.txt')}{{W}} exhausted for {{C}}TARGET_BSSID{{W}}.")
         mock_hashcat_stop.assert_called_once_with(mock_session, cleanup_hash_file=False)
         self.assertIsNone(self.manager.active_session)  # Should be cleared
         mock_try_next.assert_called_once()

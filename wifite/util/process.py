@@ -29,7 +29,9 @@ class Process(object):
         if type(command) is not str or " " in command or shell:
             shell = True
             if Configuration.verbose > 1:
-                Color.pe("\n {C}[?] {W} Executing (Shell): {B}%s{W}" % command)
+                Color.pe(
+                    "\n {C}[?] {W} Executing (Shell): {B}%s{W}" % command
+                )
         else:
             shell = False
             if Configuration.verbose > 1:
@@ -45,13 +47,23 @@ class Process(object):
         if type(stderr) is bytes:
             stderr = stderr.decode("utf-8")
 
-        if Configuration.verbose > 1 and stdout is not None and stdout.strip() != "":
+        if (
+            Configuration.verbose > 1
+            and stdout is not None
+            and stdout.strip() != ""
+        ):
             Color.pe(
-                "{P} [stdout] %s{W}" % "\n [stdout] ".join(stdout.strip().split("\n"))
+                "{P} [stdout] %s{W}"
+                % "\n [stdout] ".join(stdout.strip().split("\n"))
             )
-        if Configuration.verbose > 1 and stderr is not None and stderr.strip() != "":
+        if (
+            Configuration.verbose > 1
+            and stderr is not None
+            and stderr.strip() != ""
+        ):
             Color.pe(
-                "{P} [stderr] %s{W}" % "\n [stderr] ".join(stderr.strip().split("\n"))
+                "{P} [stderr] %s{W}"
+                % "\n [stderr] ".join(stderr.strip().split("\n"))
             )
 
         return (stdout, stderr)
@@ -129,7 +141,8 @@ class Process(object):
             and self.out.strip() != ""
         ):
             Color.pe(
-                "{P} [stdout] %s{W}" % "\n [stdout] ".join(self.out.strip().split("\n"))
+                "{P} [stdout] %s{W}"
+                % "\n [stdout] ".join(self.out.strip().split("\n"))
             )
         return self.out
 
@@ -142,7 +155,8 @@ class Process(object):
             and self.err.strip() != ""
         ):
             Color.pe(
-                "{P} [stderr] %s{W}" % "\n [stderr] ".join(self.err.strip().split("\n"))
+                "{P} [stderr] %s{W}"
+                % "\n [stderr] ".join(self.err.strip().split("\n"))
             )
         return self.err
 
@@ -195,7 +209,10 @@ class Process(object):
                 cmd = " ".join(cmd)
 
             if Configuration.verbose > 1:
-                Color.pe("\n {C}[?] {W} sending interrupt to PID %d (%s)" % (pid, cmd))
+                Color.pe(
+                    "\n {C}[?] {W} sending interrupt to PID %d (%s)"
+                    % (pid, cmd)
+                )
 
             os.kill(pid, signal.SIGINT)
 

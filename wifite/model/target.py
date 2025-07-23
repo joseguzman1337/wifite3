@@ -41,8 +41,9 @@ class Target(object):
         self.channel = fields[3].strip()
 
         privacy_str = fields[5].strip()
-        self.is_wpa3 = "WPA3" in privacy_str
-        self.is_owe = "OWE" in privacy_str
+        self.is_wpa3 = 'WPA3' in privacy_str
+        # If WPA3 is present, treat network as WPA3 and ignore OWE flag
+        self.is_owe = 'OWE' in privacy_str and not self.is_wpa3
 
         # Determine base encryption type
         if self.is_wpa3:

@@ -22,7 +22,8 @@ class Tshark(Dependency):
         # Extract BSSIDs, handshake # (1-4) and handshake 'total' (4)
         mac_regex = ("[a-zA-Z0-9]{2}:" * 6)[:-1]
         match = re.search(
-            "(%s)\\s*.*\\s*(%s).*Message.*(\\d).*of.*(\\d)" % (mac_regex, mac_regex),
+            "(%s)\\s*.*\\s*(%s).*Message.*(\\d).*of.*(\\d)"
+            % (mac_regex, mac_regex),
             line,
         )
         if match is None:
@@ -38,7 +39,9 @@ class Tshark(Dependency):
         target_client_msg_nums = {}
 
         for line in output.split("\n"):
-            src, dst, index, total = Tshark._extract_src_dst_index_total(line)
+            src, dst, index, total = Tshark._extract_src_dst_index_total(
+                line
+            )
 
             if src is None:
                 continue  # Skip
@@ -69,7 +72,9 @@ class Tshark(Dependency):
             # Between the same client and target (not different clients connecting).
             # In numeric & chronological order (Message 1, then 2, then 3, then 4)
             if index == 1:
-                target_client_msg_nums[target_client_key] = 1  # First message
+                target_client_msg_nums[target_client_key] = (
+                    1  # First message
+                )
 
             elif target_client_key not in target_client_msg_nums:
                 continue  # Not first message. We haven't gotten the first message yet. Skip.
@@ -171,7 +176,9 @@ class Tshark(Dependency):
         """
 
         if not Tshark.exists():
-            raise ValueError("Cannot detect WPS networks: Tshark does not exist")
+            raise ValueError(
+                "Cannot detect WPS networks: Tshark does not exist"
+            )
 
         command = [
             "tshark",

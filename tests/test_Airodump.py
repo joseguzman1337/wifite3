@@ -19,31 +19,27 @@ class TestAirodump(unittest.TestCase):
 
         target = targets[0]
         expected = "Comma, no trailing space"
-        assert target.essid == expected, "Expected ESSID (%s) but got (%s)" % (
-            expected,
-            target.essid,
-        )
+        assert (
+            target.essid == expected
+        ), "Expected ESSID (%s) but got (%s)" % (expected, target.essid)
 
         target = targets[1]
         expected = '"Quoted ESSID, Comma, no trailing spaces.   "'
-        assert target.essid == expected, "Expected ESSID (%s) but got (%s)" % (
-            expected,
-            target.essid,
-        )
+        assert (
+            target.essid == expected
+        ), "Expected ESSID (%s) but got (%s)" % (expected, target.essid)
 
         target = targets[2]
         expected = "Comma, Trailing space "
-        assert target.essid == expected, "Expected ESSID (%s) but got (%s)" % (
-            expected,
-            target.essid,
-        )
+        assert (
+            target.essid == expected
+        ), "Expected ESSID (%s) but got (%s)" % (expected, target.essid)
 
         target = targets[3]
         expected = '"quote" comma, trailing space '
-        assert target.essid == expected, "Expected ESSID (%s) but got (%s)" % (
-            expected,
-            target.essid,
-        )
+        assert (
+            target.essid == expected
+        ), "Expected ESSID (%s) but got (%s)" % (expected, target.essid)
 
         # Hidden access point
         target = targets[4]
@@ -51,10 +47,9 @@ class TestAirodump(unittest.TestCase):
             target.essid_known == False
         ), "ESSID full of null characters should not be known"
         expected = None
-        assert target.essid == expected, "Expected ESSID (%s) but got (%s)" % (
-            expected,
-            target.essid,
-        )
+        assert (
+            target.essid == expected
+        ), "Expected ESSID (%s) but got (%s)" % (expected, target.essid)
         assert target.essid_len == 19, (
             "ESSID length shold be 19, but got %s" % target.essid_len
         )

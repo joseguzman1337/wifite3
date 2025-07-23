@@ -136,7 +136,10 @@ class Bully(Attack, Dependency):
                     return
 
                 # Check if timeout threshold was breached
-                if self.total_timeouts >= Configuration.wps_timeout_threshold:
+                if (
+                    self.total_timeouts
+                    >= Configuration.wps_timeout_threshold
+                ):
                     self.pattack(
                         "{R}Failed: {O}More than %d Timeouts{W}"
                         % (Configuration.wps_timeout_threshold),
@@ -252,7 +255,9 @@ class Bully(Attack, Dependency):
                 self.cracked_pin = pin_re.group(1)
 
             # [Pixie-Dust] PIN FOUND: 01030365
-            pin_re = re.search(r"^\[Pixie-Dust\] PIN FOUND: '?(\d*)'?\s*$", line)
+            pin_re = re.search(
+                r"^\[Pixie-Dust\] PIN FOUND: '?(\d*)'?\s*$", line
+            )
             if pin_re:
                 self.cracked_pin = pin_re.group(1)
 
@@ -273,7 +278,9 @@ class Bully(Attack, Dependency):
             self.cracked_key = key_re.group(1)
 
         if not self.crack_result and self.cracked_pin and self.cracked_key:
-            self.pattack("{G}Cracked Key: {C}%s{W}" % self.cracked_key, newline=True)
+            self.pattack(
+                "{G}Cracked Key: {C}%s{W}" % self.cracked_key, newline=True
+            )
             self.crack_result = CrackResultWPS(
                 self.target.bssid,
                 self.target.essid,
@@ -295,7 +302,9 @@ class Bully(Attack, Dependency):
             state = "Got beacon"
 
         # [+] Last State = 'NoAssoc'   Next pin '48855501'
-        last_state = re.search(r".*Last State = '(.*)'\s*Next pin '(.*)'", line)
+        last_state = re.search(
+            r".*Last State = '(.*)'\s*Next pin '(.*)'", line
+        )
         if last_state:
             # group(1)=NoAssoc, group(2)=PIN
             pin = last_state.group(2)
@@ -314,7 +323,9 @@ class Bully(Attack, Dependency):
             # group(1)=M1,M2,..,M7, group(2)=result, group(3)=Next PIN
             self.locked = False
             m_state = mx_result_pin.group(1)
-            result = mx_result_pin.group(2)  # NoAssoc, WPSFail, Pin1Bad, Pin2Bad
+            result = mx_result_pin.group(
+                2
+            )  # NoAssoc, WPSFail, Pin1Bad, Pin2Bad
             pin = mx_result_pin.group(3)
             if pin != self.last_pin:
                 self.last_pin = pin
@@ -339,7 +350,9 @@ class Bully(Attack, Dependency):
             state = "Trying PIN (%s)" % result
 
         # [!] Run time 00:02:49, pins tested 32 (5.28 seconds per pin)
-        re_tested = re.search(r"Run time ([0-9:]+), pins tested ([0-9])+", line)
+        re_tested = re.search(
+            r"Run time ([0-9:]+), pins tested ([0-9])+", line
+        )
         if re_tested:
             # group(1)=01:23:45, group(2)=1234
             self.total_attempts = int(re_tested.group(2))
@@ -372,7 +385,9 @@ class Bully(Attack, Dependency):
             state = "{R}WPS Lock-out: {O}Waiting %s seconds...{W}" % sleeping
 
         # [Pixie-Dust] WPS pin not found
-        re_pin_not_found = re.search(r".*\[Pixie-Dust\] WPS pin not found", line)
+        re_pin_not_found = re.search(
+            r".*\[Pixie-Dust\] WPS pin not found", line
+        )
         if re_pin_not_found:
             state = '{R}Failed: {O}Bully says "WPS pin not found"{W}'
 

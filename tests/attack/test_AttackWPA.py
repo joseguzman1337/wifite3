@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from unittest.mock import patch, MagicMock
-from io import StringIO
+from unittest.mock import patch
 
 # Adjust import paths based on Wifite's structure
 # This assumes Wifite can be imported if tests are run from the project root
@@ -18,13 +17,17 @@ class TestAttackWPA(unittest.TestCase):
     def setUp(self):
         # Basic configuration mock needed for some functions called within AttackWPA
         # We might not need all of these, but it's good to have a base.
-        Configuration.initialize(load_yaml=False)  # Avoid loading external config
+        Configuration.initialize(
+            load_yaml=False
+        )  # Avoid loading external config
         Configuration.wordlist = None  # Ensure no cracking is attempted
         Configuration.wps_only = False
         Configuration.use_pmkid_only = False
         Configuration.no_deauth = True  # Avoid actual deauth calls
 
-    @patch("sys.stdout", new_callable=StringIO)  # Capture stdout
+    @patch(
+        "sys.stdout", new_callable=unittest.mock.StringIO
+    )  # Capture stdout
     def test_run_on_wpa3_target(self, mock_stdout):
         """Test AttackWPA.run() with a WPA3 target."""
         # Mock a Target object that identifies as WPA3
@@ -76,7 +79,9 @@ class TestAttackWPA(unittest.TestCase):
         "wifite.attack.wpa.AttackWPA.capture_handshake", return_value=None
     )  # Mock handshake capture to prevent it from running
     @patch("wifite.util.color.Color.pl")  # Mock Color.pl to check calls
-    def test_run_on_wpa2_target_proceeds(self, mock_color_pl, mock_capture_handshake):
+    def test_run_on_wpa2_target_proceeds(
+        self, mock_color_pl, mock_capture_handshake
+    ):
         """Test AttackWPA.run() with a WPA2 target to ensure it proceeds (superficially)."""
         mock_target_wpa2_fields = [
             "W2:MA:CA:DD:RE:SS",
@@ -119,7 +124,9 @@ class TestAttackWPA(unittest.TestCase):
             "WPA3 warning should not be printed for a WPA2 target.",
         )
 
-    @patch("wifite.attack.wpa.Handshake")  # Mock the Handshake object operations
+    @patch(
+        "wifite.attack.wpa.Handshake"
+    )  # Mock the Handshake object operations
     @patch(
         "wifite.tools.hashcat.HcxPcapTool.generate_hccapx_file"
     )  # Mock .hccapx generation
@@ -163,7 +170,9 @@ class TestAttackWPA(unittest.TestCase):
         mock_rt_manager.is_actively_cracking.return_value = False
         mock_rt_manager.get_cracked_password.return_value = None
 
-        attack = AttackWPA(target_wpa2, realtime_crack_manager=mock_rt_manager)
+        attack = AttackWPA(
+            target_wpa2, realtime_crack_manager=mock_rt_manager
+        )
 
         # Mock capture_handshake to return a mock Handshake object
         mock_handshake_obj = MockHandshake.return_value

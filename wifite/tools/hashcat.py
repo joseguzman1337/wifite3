@@ -84,6 +84,30 @@ class Hashcat(Dependency):
 
         return key
 
+    # Placeholder realtime helpers for testing; real implementations reside in
+    # other modules but tests patch these methods on Hashcat directly.
+    @staticmethod
+    def start_realtime_crack(target_bssid, hash_file_path, hash_type, wordlist_path,
+                             user_hashcat_options=None, user_preferences=None):
+        """Start a realtime hashcat session (stub)."""
+        pass
+
+    @staticmethod
+    def check_realtime_crack_status(session: 'RealtimeHashcatSession'):
+        """Check realtime cracking status (stub)."""
+        return {
+            'status_lines': [],
+            'cracked_password': None,
+            'is_process_complete': True,
+            'error_lines': []
+        }
+
+    @staticmethod
+    def stop_realtime_crack(session: 'RealtimeHashcatSession', cleanup_hash_file=False):
+        """Stop a realtime hashcat session (stub)."""
+        pass
+
+
     @staticmethod
     def crack_pmkid(pmkid_file, verbose=False):
         """

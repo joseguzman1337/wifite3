@@ -1,0 +1,2 @@
+[console_scripts]
+wifite = wifite.wifite:entry_point

@@ -110,7 +110,9 @@ class CrackResult:
             key=lambda x: x.date,
             reverse=True,
         )
-        longest_essid = max([len(result.essid or "ESSID") for result in results])
+        longest_essid = max(
+            [len(result.essid or "ESSID") for result in results]
+        )
 
         # Header
         Color.p("{D} ")
