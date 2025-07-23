@@ -1,5 +1,0 @@
-wifite
-wifite/attack
-wifite/model
-wifite/tools
-wifite/util
