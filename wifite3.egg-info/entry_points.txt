@@ -1,0 +1,3 @@
+[console_scripts]
+wifite = wifite.__main__:main
+wifite3 = wifite.__main__:main

@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Fix for raw_input on python3: https://stackoverflow.com/a/7321970
-try:
-    input = raw_input
-except NameError:
-    pass
+"""Input utilities for Wifite3.
 
+This module provides Python 3.13.5 compatible input functions and
+backward compatibility utilities for older Python code.
+"""
+
+# Python 3.13.5 compatibility - these are already built-in
+# raw_input is now input() in Python 3.x
 raw_input = input
 
-try:
-    range = xrange
-except NameError:
-    pass
-
+# xrange is now range() in Python 3.x
 xrange = range
