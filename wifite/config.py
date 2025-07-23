@@ -12,9 +12,6 @@ class Configuration(object):
     ''' Stores configuration variables and functions for Wifite. '''
     version = '2.1.5'
     
-# VERSION constant for backward compatibility
-VERSION = Configuration.version
-
     initialized = False # Flag indicating config has been initialized
     temp_dir = None     # Temporary directory
     interface = None
@@ -425,6 +422,9 @@ VERSION = Configuration.version
                 continue
             result += Color.s("{G}%s {W} {C}%s{W}\n" % (key.ljust(max_len),val))
         return result
+
+# VERSION constant for backward compatibility
+VERSION = Configuration.version
 
 if __name__ == '__main__':
     Configuration.initialize(False)
