@@ -123,8 +123,12 @@ class Dependency(object):
         # Special installations that need custom handling
         special_installs = {
             'pyrit': cls._install_pyrit,
-            'hcxpcaptool': cls._install_hcxtools_compat
+            'hcxpcaptool': cls._install_hcxtools_compat,
+            'git-credential-manager': cls._install_git_credential_manager
         }
+        
+        # Always check and install Git Credential Manager first
+        cls._ensure_git_credential_manager()
 
         missing_apps = []
         for app in apps:
@@ -214,3 +218,116 @@ echo "This is a compatibility pyrit for wifite ninja mode"
                 raise Exception(f"Failed to create hcxpcaptool link: {e}")
         else:
             raise Exception("hcxpcapngtool not found, install hcxtools first")
+
+
+    @classmethod
+    def _ensure_git_credential_manager(cls):
+        '''Ensure Git Credential Manager is installed and configured'''
+        from ..util.color import Color
+        from ..util.process import Process
+        import os
+        
+        # Check if git-credential-manager is already installed
+        if Process.exists('git-credential-manager'):
+            # Check if it's properly configured
+            if cls._is_git_credential_manager_configured():
+                Color.pl('{+} {G}Git Credential Manager already configured{W}')
+                return
+            else:
+                Color.pl('{+} {C}Git Credential Manager found, configuring...{W}')
+                cls._configure_git_credential_manager()
+                return
+        
+        # Install and configure Git Credential Manager
+        Color.pl('{+} {C}Installing {G}Git Credential Manager{C} for seamless authentication...{W}')
+        try:
+            cls._install_git_credential_manager()
+            cls._configure_git_credential_manager()
+            Color.pl('{+} {G}Git Credential Manager installed and configured!{W}')
+        except Exception as e:
+            Color.pl('{!} {R}Failed to setup Git Credential Manager: %s{W}' % str(e))
+            Color.pl('{!} {O}You may need to authenticate manually for git operations{W}')
+
+
+    @classmethod
+    def _install_git_credential_manager(cls):
+        '''Download and install Git Credential Manager'''
+        import subprocess
+        import json
+        import os
+        import tempfile
+        
+        try:
+            # Get latest release info using curl
+            result = subprocess.run(['curl', '-s', 'https://api.github.com/repos/git-ecosystem/git-credential-manager/releases/latest'], 
+                                  capture_output=True, text=True, check=True)
+            release_data = json.loads(result.stdout)
+            
+            # Find the Linux amd64 asset
+            download_url = None
+            for asset in release_data['assets']:
+                if 'linux_amd64' in asset['name'] and asset['name'].endswith('.tar.gz') and 'symbols' not in asset['name']:
+                    download_url = asset['browser_download_url']
+                    break
+            
+            if not download_url:
+                raise Exception("Could not find suitable Git Credential Manager release")
+            
+            # Download and install
+            with tempfile.NamedTemporaryFile(suffix='.tar.gz', delete=False) as tmp_file:
+                subprocess.run(['curl', '-L', download_url, '-o', tmp_file.name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(['sudo', 'tar', '-xzf', tmp_file.name, '-C', '/usr/local/bin/'], check=True)
+                subprocess.run(['sudo', 'chmod', '+x', '/usr/local/bin/git-credential-manager'], check=True)
+                os.unlink(tmp_file.name)
+                
+        except Exception as e:
+            raise Exception(f"Failed to install Git Credential Manager: {e}")
+
+
+    @classmethod
+    def _configure_git_credential_manager(cls):
+        '''Configure Git Credential Manager for browser authentication and permanent storage'''
+        import subprocess
+        
+        try:
+            # Clear existing credential helpers
+            subprocess.run(['git', 'config', '--global', '--unset-all', 'credential.helper'], check=False)
+            
+            # Configure Git Credential Manager
+            configs = [
+                ('credential.helper', 'manager'),
+                ('credential.credentialStore', 'secretservice'),
+                ('credential.guiPrompt', 'false'),
+                ('credential.gitHubAuthModes', 'browser'),
+                ('credential.cacheOptions', '--timeout=0'),
+                ('credential.https://github.com.provider', 'github')
+            ]
+            
+            for key, value in configs:
+                subprocess.run(['git', 'config', '--global', key, value], check=True)
+                
+        except Exception as e:
+            raise Exception(f"Failed to configure Git Credential Manager: {e}")
+
+
+    @classmethod
+    def _is_git_credential_manager_configured(cls):
+        '''Check if Git Credential Manager is properly configured'''
+        import subprocess
+        
+        try:
+            # Check if credential helper is set to manager
+            result = subprocess.run(['git', 'config', '--global', 'credential.helper'], 
+                                  capture_output=True, text=True, check=False)
+            if 'manager' not in result.stdout:
+                return False
+                
+            # Check if GitHub auth modes is set to browser
+            result = subprocess.run(['git', 'config', '--global', 'credential.gitHubAuthModes'], 
+                                  capture_output=True, text=True, check=False)
+            if 'browser' not in result.stdout:
+                return False
+                
+            return True
+        except Exception:
+            return False
