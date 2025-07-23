@@ -1,7 +1,7 @@
 .PHONY: help install install-dev test lint format security build clean docker-build docker-run deploy
 
 PYTHON := python3.13
-PIP := pip3
+PIP := python3.13 -m pip
 PROJECT_NAME := wifite3
 VERSION := 3.13.5
 IMAGE_NAME := $(PROJECT_NAME):$(VERSION)
